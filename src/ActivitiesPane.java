@@ -134,18 +134,69 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 			checkoutButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					JTextField bidField = new JTextField(10);
-					JTextField callNumberField = new JTextField(10);
+					JTextField callNumbersField = new JTextField(10);
 
 					JComponent[] inputs = new JComponent[] {
 
-					new JLabel("bid:"), bidField, new JLabel("Call number:"),
-							callNumberField,
+					new JLabel("bid:"), bidField, 
+					new JLabel("Call number:"),
+							callNumbersField,
 
 					};
 					int result = JOptionPane.showConfirmDialog(null, inputs,
 							"Enter borrowing info",
 							JOptionPane.OK_CANCEL_OPTION,
 							JOptionPane.WARNING_MESSAGE);
+					
+					if (result == JOptionPane.OK_OPTION) {
+						int bid = Integer.parseInt(bidField.getText());
+						String[] callNumbers = callNumbersField.getText().split(",");
+
+
+						try {
+							
+							
+							java.util.Date currentDate = new java.util.Date();
+							DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+							Date outDate = null;
+							try {
+								outDate = new Date(dateFormat.parse(dateFormat.format(currentDate)).getTime());
+							} catch (ParseException e2) {
+								// TODO Auto-generated catch block
+								e2.printStackTrace();
+							}
+							
+							for (int i = 0; i < callNumbers.length; i++){
+							Date inDate = null;
+							try {
+								inDate = new Date(dateFormat.parse(dateFormat.format(currentDate)).getTime());
+							} catch (ParseException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							
+							
+							PreparedStatement ps = Library.con
+									.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
+							ps.setInt(1, bid);
+							ps.setString(2, callNumbers[i]);
+							ps.setString(3, "1p");
+							ps.setDate(4, outDate);
+							ps.setDate(5,  inDate);
+
+							ps.executeUpdate();
+							Library.con.commit();
+							ps.close();
+
+							}
+
+							
+
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
 				}
 			});
 
@@ -210,13 +261,12 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 						String isbn = isbnField.getText();
 						String title = titleField.getText();
 						String mainAuthor = mainAuthorField.getText();
-						String otherAuthors = otherAuthorsField.getText();
+						String[] otherAuthors = otherAuthorsField.getText().split(",");
 						String publisher = publisherField.getText();
 						int year = Integer.parseInt(yearField.getText());
-						String subjects = subjectsField.getText();
+						String[] subjects = subjectsField.getText().split(",");
 
-						String[] otherAuthorsArray = otherAuthors.split(",");
-						String[] subjectsArray = subjects.split(",");
+						
 
 						try {
 							PreparedStatement ps = Library.con
@@ -248,11 +298,11 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 						}
 
 						try {
-							for (int i = 0; i < otherAuthorsArray.length; i++) {
+							for (int i = 0; i < otherAuthors.length; i++) {
 								PreparedStatement ps = Library.con
 										.prepareStatement("INSERT INTO hasAuthor VALUES (?,?)");
 								ps.setString(1, callNumber);
-								ps.setString(2, otherAuthorsArray[i]);
+								ps.setString(2, otherAuthors[i]);
 
 								ps.executeUpdate();
 								Library.con.commit();
@@ -265,11 +315,11 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 						}
 						
 						try {
-							for (int i = 0; i < subjectsArray.length; i++) {
+							for (int i = 0; i < subjects.length; i++) {
 								PreparedStatement ps = Library.con
 										.prepareStatement("INSERT INTO hasSubject VALUES (?,?)");
 								ps.setString(1, callNumber);
-								ps.setString(2, subjectsArray[i]);
+								ps.setString(2, subjects[i]);
 
 								ps.executeUpdate();
 								Library.con.commit();
