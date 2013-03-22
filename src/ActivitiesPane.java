@@ -52,8 +52,28 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 					JTextField phoneField = new JTextField(10);
 					JTextField emailAddressField = new JTextField(10);
 					JTextField sinOrStNoField = new JTextField(10);
-					JTextField typeField = new JTextField(10);
-					JTextField expiryDateField = new JTextField(20);
+					
+					String[] typeString = { "Student", "Faculty", "Staff"};
+					JComboBox typeCombo = new JComboBox(typeString);
+					DateFormat dateFormat = new SimpleDateFormat("yyyy");
+					java.util.Date date2 = new java.util.Date();
+					
+					
+					String currentYear = dateFormat.format(date2).toString();
+					String[] yearString = {"Year", currentYear, Integer.toString(((Integer.valueOf(currentYear)).intValue() + 1)), Integer.toString(((Integer.valueOf(currentYear)).intValue() + 2)), Integer.toString(((Integer.valueOf(currentYear)).intValue() + 3)), Integer.toString(((Integer.valueOf(currentYear)).intValue() + 4))};
+					String[] monthString = {"Month", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"}; 
+					String[] dayString = {"Day", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", 
+							"18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+					JComboBox yearCombo = new JComboBox(yearString);
+					JComboBox monthCombo = new JComboBox(monthString);
+					JComboBox dayCombo = new JComboBox(dayString);
+					JPanel expiryPanel = new JPanel();
+					FlowLayout expiryLayout = new FlowLayout();
+					
+					expiryPanel.setLayout(expiryLayout);
+					expiryPanel.add(yearCombo);
+					expiryPanel.add(monthCombo);
+					expiryPanel.add(dayCombo);
 
 					JComponent[] inputs = new JComponent[] {
 
@@ -63,8 +83,8 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 							new JLabel("Phone:"), phoneField,
 							new JLabel("Email:"), emailAddressField,
 							new JLabel("Sin or St No.:"), sinOrStNoField,
-							new JLabel("Type:"), typeField,
-							new JLabel("Expiry date:"), expiryDateField,
+							new JLabel("Type:"), typeCombo,
+							new JLabel("Expiration date"), expiryPanel,
 
 					};
 					int result = JOptionPane.showConfirmDialog(null, inputs,
@@ -81,16 +101,17 @@ public class ActivitiesPane extends JPanel { // The info panel for when photos
 						String emailAddress = emailAddressField.getText();
 						int sinOrStNo = Integer.parseInt(sinOrStNoField
 								.getText());
-						String type = typeField.getText();
+						String type = typeCombo.getSelectedItem().toString().toLowerCase();
 						Date expiryDate = null;
 
 						DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-						String date = expiryDateField.getText();
+						String date = yearCombo.getSelectedItem().toString() + "-" + monthCombo.getSelectedItem().toString() + "-" + dayCombo.getSelectedItem().toString();
 
+						// TODO: add error popup
 						try {
 							expiryDate = new Date(df.parse(date).getTime());
 						} catch (ParseException ex) {
-							ex.printStackTrace();
+							new ErrorMessage("dkfjdf");
 						}
 
 						PreparedStatement ps;
