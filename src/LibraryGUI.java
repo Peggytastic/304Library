@@ -5,6 +5,7 @@ import java.awt.Font;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -38,19 +39,16 @@ public class LibraryGUI {
 	public void showGUI() {
 
 		frame = new JFrame("Library");
-		frame.setBackground(Color.white); // Sets background color of the frame
-											// to white
-		frame.setPreferredSize(new Dimension(950, 600)); // Sets the size of the
-															// frame - frame
-															// size can still be
-															// increased and
-															// decreased by user
+		frame.setBackground(Color.white);
+		frame.setPreferredSize(new Dimension(950, 600));
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		tablePane = new TablePane(); // Panel for viewing a table
+		// Panel for viewing the tables
+		tablePane = new TablePane(); 
 		tablePane.setBorder(BorderFactory.createLineBorder(Color.black));
 
-		userPane = new JPanel(); // Panel for displaying types of users
+		// Panel for displaying types of users
+		userPane = new JPanel(); 
 		userPane.setLayout(new BoxLayout(userPane, BoxLayout.Y_AXIS));
 		userPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		Font font = new Font("Arial", Font.BOLD, 16);
@@ -80,10 +78,10 @@ public class LibraryGUI {
 	// Method for initializing the menu
 	private void initializeMenu() {
 
-		JMenu photoLibrary;
+		JMenu Library;
 		JMenuItem quit;
 
-		photoLibrary = new JMenu("Library");
+		Library = new JMenu("Library");
 
 		// Exits the application
 		quit = new JMenuItem("Quit");
@@ -94,15 +92,15 @@ public class LibraryGUI {
 			}
 		});
 
-		photoLibrary.add(quit);
+		Library.add(quit);
 
 		menuBar = new JMenuBar();
-		menuBar.add(photoLibrary);
+		menuBar.add(Library);
 
 		frame.setJMenuBar(menuBar);
 	}
 
-	// Method for initializing the activities
+	// Method for initializing the activities for each user
 	private void initializeUserPane() {
 
 		JButton clerkButton = new JButton("Clerk");
@@ -143,25 +141,18 @@ public class LibraryGUI {
 
 	}
 
-	public static void showTable(ResultSet rs, PreparedStatement ps,
-			String buttonClicked) {
+	public static void showTable(ResultSet rs, String buttonClicked) {
 
 		int numCols;
+		ResultSetMetaData rsmd;
 
-		ResultSetMetaData rsmd;	
-		
 		JTextArea tableTitle = null;
 		JTable table = null;
 
 		try {
 
-			if (rs != null){
-			rsmd = rs.getMetaData();
-			}
+				rsmd = rs.getMetaData();
 			
-			else{
-				rsmd = ps.getMetaData();
-			}
 			numCols = rsmd.getColumnCount();
 
 			String columnNames[] = new String[numCols];
@@ -170,15 +161,17 @@ public class LibraryGUI {
 			}
 
 			if (buttonClicked == "addBorrowerButton") {
+
+				// For creating the size of the table
 				Statement stmt = Library.con.createStatement();
 				ResultSet count = stmt.executeQuery("SELECT * FROM Borrower");
 				List<Integer> borrowers = new ArrayList<Integer>();
-				while(count.next()){
-				 borrowers.add(count.getInt("bid"));
+				while (count.next()) {
+					borrowers.add(count.getInt("bid"));
 				}
 				Object data[][] = new Object[borrowers.size()][numCols];
 				count.close();
-				
+
 				int bid;
 				String password;
 				String name;
@@ -189,6 +182,8 @@ public class LibraryGUI {
 				String type;
 				String expiryDate;
 				int j = 0;
+				
+				// Fill table
 				while (rs.next()) {
 					bid = rs.getInt("bid");
 					password = rs.getString("password");
@@ -207,19 +202,21 @@ public class LibraryGUI {
 				}
 				tableTitle = new JTextArea("Borrower table");
 				table = new JTable(data, columnNames);
-				
+
 			}
-			
-			if(buttonClicked == "addBookButton"){
+
+			if (buttonClicked == "addBookButton") {
+
+				// For creating the size of the table
 				Statement stmt = Library.con.createStatement();
 				ResultSet count = stmt.executeQuery("SELECT * FROM Book");
 				List<String> books = new ArrayList<String>();
-				while(count.next()){
-				 books.add(count.getString("callNumber"));
+				while (count.next()) {
+					books.add(count.getString("callNumber"));
 				}
 				Object data[][] = new Object[books.size()][numCols];
 				count.close();
-				
+
 				String callNumber;
 				String isbn;
 				String title;
@@ -227,16 +224,19 @@ public class LibraryGUI {
 				String publisher;
 				int year;
 				int j = 0;
+				
+				// Fill table
 				while (rs.next()) {
 					callNumber = rs.getString("callNumber");
 					isbn = rs.getString("isbn");
 					title = rs.getString("title");
 					mainAuthor = rs.getString("mainAuthor");
-					
+
 					publisher = rs.getString("publisher");
 					year = rs.getInt("year");
 
-					Object tuple[] = { callNumber, isbn, title, mainAuthor, publisher, year };
+					Object tuple[] = { callNumber, isbn, title, mainAuthor,
+							publisher, year };
 					data[j] = tuple;
 					j++;
 
@@ -244,21 +244,25 @@ public class LibraryGUI {
 				tableTitle = new JTextArea("Book table");
 				table = new JTable(data, columnNames);
 			}
-			
-			if(buttonClicked == "addBookCopyButton"){
+
+			if (buttonClicked == "addBookCopyButton") {
+
+				// For creating the size of the table
 				Statement stmt = Library.con.createStatement();
 				ResultSet count = stmt.executeQuery("SELECT * FROM BookCopy");
 				List<String> bookCopies = new ArrayList<String>();
-				while(count.next()){
-				 bookCopies.add(count.getString("callNumber"));
+				while (count.next()) {
+					bookCopies.add(count.getString("callNumber"));
 				}
 				Object data[][] = new Object[bookCopies.size()][numCols];
 				count.close();
-				
+
 				String callNumber;
 				String copyNo;
 				String status;
 				int j = 0;
+				
+				// Fill table
 				while (rs.next()) {
 					callNumber = rs.getString("callNumber");
 					copyNo = rs.getString("copyNo");
@@ -270,13 +274,51 @@ public class LibraryGUI {
 				}
 				tableTitle = new JTextArea("BookCopy table");
 				table = new JTable(data, columnNames);
-				
+
 			}
-			
+
+			if (buttonClicked == "checkoutButton") {
+
+				// For creating the size of the table
+				Statement stmt = Library.con.createStatement();
+				ResultSet count = stmt.executeQuery("SELECT * FROM borrowing");
+				List<String> borrowings = new ArrayList<String>();
+				while (count.next()) {
+					borrowings.add(count.getString("callNumber"));
+				}
+				Object data[][] = new Object[borrowings.size()][numCols];
+				count.close();
+
+				int borid;
+				int bid;
+				String callNumber;
+				String copyNo;
+				Date outDate;
+				Date inDate;
+				int j = 0;
+				
+				// Fill table
+				while (rs.next()) {
+					borid = rs.getInt("borid");
+					bid = rs.getInt("bid");
+					callNumber = rs.getString("callNumber");
+					copyNo = rs.getString("copyNo");
+					outDate = rs.getDate("outDate");
+					inDate = rs.getDate("inDate");
+					Object tuple[] = { borid, bid, callNumber, copyNo, inDate, outDate };
+					data[j] = tuple;
+					j++;
+
+				}
+				tableTitle = new JTextArea("Borrowing table");
+				table = new JTable(data, columnNames);
+
+			}
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
 			table.setAutoCreateRowSorter(true);
-			
+
+			// Display table
 			table.setFillsViewportHeight(true);
 			tablePane.removeAll();
 			tablePane.updateUI();

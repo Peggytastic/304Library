@@ -109,6 +109,8 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void addBorrower() {
+		
+		// User inputs: password, name, address, phone, email, sin/st, type, date
 		JTextField passwordField = new JTextField(10);
 		JTextField nameField = new JTextField(10);
 		JTextField addressField = new JTextField(10);
@@ -186,6 +188,7 @@ public class ActivitiesPane extends JPanel {
 			PreparedStatement ps;
 
 			try {
+				// Insert new borrower into Borrower table
 				ps = Library.con
 						.prepareStatement("INSERT INTO borrower (password, name, address, phone, emailAddress, sinOrStNo, type, expiryDate) VALUES (?,?,?,?,?,?,?,?)");
 
@@ -201,14 +204,14 @@ public class ActivitiesPane extends JPanel {
 				ps.executeUpdate();
 				Library.con.commit();
 
+				// Show Borrower table
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs = stmt.executeQuery("SELECT * FROM Borrower");
-
-				LibraryGUI.showTable(rs, null, "addBorrowerButton");
-
+				LibraryGUI.showTable(rs, "addBorrowerButton");
+				
 				rs.close();
-
 				ps.close();
+				
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -218,6 +221,8 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void addBook() {
+		
+		// User inputs: callNumber, isbn, title, mainAuthors, otherAuthors, publisher, year, subjects
 		JTextField callNumberField = new JTextField(15);
 		JTextField isbnField = new JTextField(10);
 		JTextField titleField = new JTextField(10);
@@ -252,6 +257,8 @@ public class ActivitiesPane extends JPanel {
 			String[] subjects = subjectsField.getText().split(",");
 
 			try {
+				
+				// Insert new book into Book table
 				PreparedStatement ps = Library.con
 						.prepareStatement("INSERT INTO book (callNumber, isbn, title, mainAuthor, publisher, year) VALUES (?,?,?,?,?,?)");
 				ps.setString(1, callNumber);
@@ -264,10 +271,10 @@ public class ActivitiesPane extends JPanel {
 				ps.executeUpdate();
 				Library.con.commit();
 
+				// Show Book table
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs = stmt.executeQuery("SELECT * FROM Book");
-
-				LibraryGUI.showTable(rs, null, "addBookButton");
+				LibraryGUI.showTable(rs, "addBookButton");
 
 				rs.close();
 				ps.close();
@@ -279,6 +286,8 @@ public class ActivitiesPane extends JPanel {
 
 			try {
 				for (int i = 0; i < otherAuthors.length; i++) {
+					
+					// Add other entered authors into hasAuthor table
 					PreparedStatement ps = Library.con
 							.prepareStatement("INSERT INTO hasAuthor VALUES (?,?)");
 					ps.setString(1, callNumber);
@@ -296,6 +305,8 @@ public class ActivitiesPane extends JPanel {
 
 			try {
 				for (int i = 0; i < subjects.length; i++) {
+					
+					// Add subjects into hasSubjects table
 					PreparedStatement ps = Library.con
 							.prepareStatement("INSERT INTO hasSubject VALUES (?,?)");
 					ps.setString(1, callNumber);
@@ -315,6 +326,10 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void checkout() {
+		// NEED TO THROW ERROR IF CALL NUMBER DOES NOT EXIST
+		// NEED TO SET INDATE
+		
+		// User inputs: bid, list of call numbers
 		JTextField bidField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
@@ -322,7 +337,6 @@ public class ActivitiesPane extends JPanel {
 
 		new JLabel("bid:"), bidField, new JLabel("Call number:"),
 				callNumbersField,
-
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
@@ -346,6 +360,12 @@ public class ActivitiesPane extends JPanel {
 				}
 
 				for (int i = 0; i < callNumbers.length; i++) {
+					
+					// Get all copies with the matching callNumber and status being in
+					PreparedStatement ps2 = Library.con
+							.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
+					ps2.setString(1, callNumbers[i]);
+
 					Date inDate = null;
 					try {
 						inDate = new Date(dateFormat.parse(
@@ -354,21 +374,48 @@ public class ActivitiesPane extends JPanel {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+					ps2.executeUpdate();
+					ResultSet rs = ps2.getResultSet();
+					
+					if (rs.next() == true) {
+						
+						// Insert into Borrowing table if there exists a copy of the book with status "in"
+						String copyNo = rs.getString("copyNo");
+						PreparedStatement ps = Library.con
+								.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
+						ps.setInt(1, bid);
+						ps.setString(2, callNumbers[i]);
+						ps.setString(3, copyNo);
+						ps.setDate(4, outDate);
+						ps.setDate(5, inDate);
 
-					PreparedStatement ps = Library.con
-							.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
-					ps.setInt(1, bid);
-					ps.setString(2, callNumbers[i]);
-					ps.setString(3, "1p");
-					ps.setDate(4, outDate);
-					ps.setDate(5, inDate);
+						ps.executeUpdate();
+						Library.con.commit();
 
-					ps.executeUpdate();
-					Library.con.commit();
-					ps.close();
+						// Set status of checked out copy to "out"
+						PreparedStatement ps3 = Library.con
+								.prepareStatement("update bookcopy set status = ? where callNumber = ? and copyNo=?");
+						ps3.setString(1, "out");
+						ps3.setString(2, callNumbers[i]);
+						ps3.setString(3, copyNo);
 
+						ps3.executeUpdate();
+						Library.con.commit();
+
+						ps.close();
+						ps2.close();
+						ps3.close();
+
+					} else {
+						// Error message for if there are no copies in
+						new ErrorMessage("No copies are in for"
+								+ callNumbers[i]);
+					}
 				}
-
+				Statement stmt = Library.con.createStatement();
+				ResultSet rs2 = stmt.executeQuery("SELECT * FROM Borrowing");
+				LibraryGUI.showTable(rs2, "checkoutButton");
+				
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -381,6 +428,9 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void addBookCopy() {
+		// NEED TO CHECK IF CALLNUMBER IS IN BOOK TABLE
+
+		// User inputs: callNumber
 		JTextField callNumberField = new JTextField(15);
 
 		JComponent[] inputs = new JComponent[] { new JLabel("Call number:"),
@@ -394,7 +444,7 @@ public class ActivitiesPane extends JPanel {
 		if (result == JOptionPane.OK_OPTION) {
 			String callNumber = callNumberField.getText();
 			try {
-				//NEED TO CHECK IF CALLNUMBER IS IN BOOK TABLE
+				// Get number of copies already in the database
 				PreparedStatement ps = Library.con
 						.prepareStatement("select * from bookcopy where callNumber = ?");
 
@@ -408,28 +458,29 @@ public class ActivitiesPane extends JPanel {
 					copies.add(rs.getString("callNumber"));
 				}
 
-				String copyNum = Integer.toString(copies.size()+1);
+				// copyNo for the new copy
+				String copyNum = Integer.toString(copies.size() + 1);
 
-				// Add copy to BookCopy table
+				// Add copy to BookCopy table 
 				PreparedStatement ps2 = Library.con
 						.prepareStatement("insert into BookCopy (callNumber, copyNo, status) VALUES (?,?,?)");
 				ps2.setString(1, callNumber);
 				ps2.setString(2, copyNum);
 				ps2.setString(3, "in");
-				
+
 				ps2.executeUpdate();
 				Library.con.commit();
-				
+
+				// Show BookCopy table
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs2 = stmt.executeQuery("SELECT * FROM BookCopy");
-				
-				LibraryGUI.showTable(rs2, null, "addBookCopyButton");
+				LibraryGUI.showTable(rs2, "addBookCopyButton");
 
 				rs.close();
 				rs2.close();
 				ps.close();
 				ps2.close();
-				
+
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
