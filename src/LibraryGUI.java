@@ -10,8 +10,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 public class LibraryGUI {
 	// The main frame for the GUI
@@ -144,24 +148,10 @@ public class LibraryGUI {
 
 		int numCols;
 
-		ResultSetMetaData rsmd;
-
-		int bid;
-		String password;
-		String name;
-		String address;
-		int phone;
-		String emailAddress;
-		int sinOrStNo;
-		String type;
-		String expiryDate;
-		String callNumber;
-		String isbn;
-		String title;
-		String mainAuthor;
+		ResultSetMetaData rsmd;	
 		
-		String publisher;
-		int year;
+		JTextArea tableTitle = null;
+		JTable table = null;
 
 		try {
 
@@ -175,12 +165,29 @@ public class LibraryGUI {
 			numCols = rsmd.getColumnCount();
 
 			String columnNames[] = new String[numCols];
-			Object data[][] = new Object[100][numCols];
 			for (int i = 0; i < numCols; i++) {
 				columnNames[i] = rsmd.getColumnName(i + 1);
 			}
 
 			if (buttonClicked == "addBorrowerButton") {
+				Statement stmt = Library.con.createStatement();
+				ResultSet count = stmt.executeQuery("SELECT * FROM Borrower");
+				List<Integer> borrowers = new ArrayList<Integer>();
+				while(count.next()){
+				 borrowers.add(count.getInt("bid"));
+				}
+				Object data[][] = new Object[borrowers.size()][numCols];
+				count.close();
+				
+				int bid;
+				String password;
+				String name;
+				String address;
+				int phone;
+				String emailAddress;
+				int sinOrStNo;
+				String type;
+				String expiryDate;
 				int j = 0;
 				while (rs.next()) {
 					bid = rs.getInt("bid");
@@ -198,9 +205,27 @@ public class LibraryGUI {
 					j++;
 
 				}
+				tableTitle = new JTextArea("Borrower table");
+				table = new JTable(data, columnNames);
+				
 			}
 			
 			if(buttonClicked == "addBookButton"){
+				Statement stmt = Library.con.createStatement();
+				ResultSet count = stmt.executeQuery("SELECT * FROM Book");
+				List<String> books = new ArrayList<String>();
+				while(count.next()){
+				 books.add(count.getString("callNumber"));
+				}
+				Object data[][] = new Object[books.size()][numCols];
+				count.close();
+				
+				String callNumber;
+				String isbn;
+				String title;
+				String mainAuthor;
+				String publisher;
+				int year;
 				int j = 0;
 				while (rs.next()) {
 					callNumber = rs.getString("callNumber");
@@ -216,11 +241,47 @@ public class LibraryGUI {
 					j++;
 
 				}
+				tableTitle = new JTextArea("Book table");
+				table = new JTable(data, columnNames);
 			}
-			JTable table = new JTable(data, columnNames);
+			
+			if(buttonClicked == "addBookCopyButton"){
+				Statement stmt = Library.con.createStatement();
+				ResultSet count = stmt.executeQuery("SELECT * FROM BookCopy");
+				List<String> bookCopies = new ArrayList<String>();
+				while(count.next()){
+				 bookCopies.add(count.getString("callNumber"));
+				}
+				Object data[][] = new Object[bookCopies.size()][numCols];
+				count.close();
+				
+				String callNumber;
+				String copyNo;
+				String status;
+				int j = 0;
+				while (rs.next()) {
+					callNumber = rs.getString("callNumber");
+					copyNo = rs.getString("copyNo");
+					status = rs.getString("status");
+					Object tuple[] = { callNumber, copyNo, status };
+					data[j] = tuple;
+					j++;
+
+				}
+				tableTitle = new JTextArea("BookCopy table");
+				table = new JTable(data, columnNames);
+				
+			}
+			
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
+			table.setAutoCreateRowSorter(true);
+			
 			table.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle.setEditable(false);
+			tablePane.add(tableTitle);
 			tablePane.add(scrollPane);
 
 		} catch (SQLException e) {

@@ -92,7 +92,7 @@ public class ActivitiesPane extends JPanel {
 					addBook();
 				}
 			});
-			
+
 			addBookCopyButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 
@@ -203,8 +203,7 @@ public class ActivitiesPane extends JPanel {
 
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs = stmt.executeQuery("SELECT * FROM Borrower");
-				LibraryGUI.tablePane.removeAll();
-				LibraryGUI.tablePane.updateUI();
+
 				LibraryGUI.showTable(rs, null, "addBorrowerButton");
 
 				rs.close();
@@ -267,12 +266,10 @@ public class ActivitiesPane extends JPanel {
 
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs = stmt.executeQuery("SELECT * FROM Book");
-				LibraryGUI.tablePane.removeAll();
-				LibraryGUI.tablePane.updateUI();
+
 				LibraryGUI.showTable(rs, null, "addBookButton");
 
 				rs.close();
-
 				ps.close();
 
 			} catch (SQLException e1) {
@@ -378,66 +375,67 @@ public class ActivitiesPane extends JPanel {
 			}
 		}
 	}
-	public void searchForBooks(){
-		
+
+	public void searchForBooks() {
+
 	}
-	
-	public void addBookCopy(){
+
+	public void addBookCopy() {
 		JTextField callNumberField = new JTextField(15);
-		
-			
-			 JComponent[] inputs = new JComponent[] {		
-						new JLabel("Call number:"), callNumberField,
 
-				};
-			 int result = JOptionPane.showConfirmDialog(null, inputs,
-						"Enter book copy info", JOptionPane.OK_CANCEL_OPTION,
-						JOptionPane.WARNING_MESSAGE);
+		JComponent[] inputs = new JComponent[] { new JLabel("Call number:"),
+				callNumberField,
 
-				if (result == JOptionPane.OK_OPTION) {
-					String callNumber = callNumberField.getText();
-					try {
-						PreparedStatement ps = Library.con
-								.prepareStatement("select * from book where callNumber = ?");
-						
-						ps.setString(1, callNumber);
-						
-						ps.executeUpdate();
-						
-						ResultSet rs = ps.getResultSet();
-						
-						ps.close();
-						
-						List<String> copies = new ArrayList<String>();
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs,
+				"Enter book copy info", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE);
 
-						while(rs.next()){
-							copies.add(rs.getString("callNumber"));
-							
-						}
-						String copyNum = Integer.toString(copies.size());
-						
-						// Add copy to BookCopy table
-						PreparedStatement ps2 = Library.con
-								.prepareStatement("insert into BookCopy (callNumber, copyNo, status) VALUES (?,?,?)");
-						ps2.setString(1, callNumber);
-						ps2.setString(2, copyNum);
-						ps2.setString(3, "in");
-						ps2.executeUpdate();
-						
-						Library.con.commit();
-						ps2.close();
-						
-					    
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					
+		if (result == JOptionPane.OK_OPTION) {
+			String callNumber = callNumberField.getText();
+			try {
+				//NEED TO CHECK IF CALLNUMBER IS IN BOOK TABLE
+				PreparedStatement ps = Library.con
+						.prepareStatement("select * from bookcopy where callNumber = ?");
+
+				ps.setString(1, callNumber);
+				ps.executeUpdate();
+				ResultSet rs = ps.getResultSet();
+
+				List<String> copies = new ArrayList<String>();
+
+				while (rs.next()) {
+					copies.add(rs.getString("callNumber"));
 				}
-		
-		
-		
-		
+
+				String copyNum = Integer.toString(copies.size()+1);
+
+				// Add copy to BookCopy table
+				PreparedStatement ps2 = Library.con
+						.prepareStatement("insert into BookCopy (callNumber, copyNo, status) VALUES (?,?,?)");
+				ps2.setString(1, callNumber);
+				ps2.setString(2, copyNum);
+				ps2.setString(3, "in");
+				
+				ps2.executeUpdate();
+				Library.con.commit();
+				
+				Statement stmt = Library.con.createStatement();
+				ResultSet rs2 = stmt.executeQuery("SELECT * FROM BookCopy");
+				
+				LibraryGUI.showTable(rs2, null, "addBookCopyButton");
+
+				rs.close();
+				rs2.close();
+				ps.close();
+				ps2.close();
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
 	}
 }
