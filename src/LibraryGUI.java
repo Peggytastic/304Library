@@ -245,7 +245,7 @@ public class LibraryGUI {
 				table = new JTable(data, columnNames);
 			}
 
-			if (buttonClicked == "addBookCopyButton") {
+			if (buttonClicked == "addBookCopyButton" || buttonClicked == "processReturnButton") {
 
 				// For creating the size of the table
 				Statement stmt = Library.con.createStatement();
@@ -305,7 +305,7 @@ public class LibraryGUI {
 					copyNo = rs.getString("copyNo");
 					outDate = rs.getDate("outDate");
 					inDate = rs.getDate("inDate");
-					Object tuple[] = { borid, bid, callNumber, copyNo, inDate, outDate };
+					Object tuple[] = { borid, bid, callNumber, copyNo, outDate, inDate };
 					data[j] = tuple;
 					j++;
 

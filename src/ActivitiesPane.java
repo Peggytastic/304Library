@@ -12,6 +12,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -67,7 +68,7 @@ public class ActivitiesPane extends JPanel {
 					returnBooks();
 				}
 			});
-			
+
 			this.add(addBorrowerButton);
 			this.add(checkoutButton);
 			this.add(processReturnButton);
@@ -120,8 +121,9 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void addBorrower() {
-		
-		// User inputs: password, name, address, phone, email, sin/st, type, date
+
+		// User inputs: password, name, address, phone, email, sin/st, type,
+		// date
 		JTextField passwordField = new JTextField(10);
 		JTextField nameField = new JTextField(10);
 		JTextField addressField = new JTextField(10);
@@ -219,10 +221,10 @@ public class ActivitiesPane extends JPanel {
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs = stmt.executeQuery("SELECT * FROM Borrower");
 				LibraryGUI.showTable(rs, "addBorrowerButton");
-				
+
 				rs.close();
 				ps.close();
-				
+
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -232,8 +234,9 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void addBook() {
-		
-		// User inputs: callNumber, isbn, title, mainAuthors, otherAuthors, publisher, year, subjects
+
+		// User inputs: callNumber, isbn, title, mainAuthors, otherAuthors,
+		// publisher, year, subjects
 		JTextField callNumberField = new JTextField(15);
 		JTextField isbnField = new JTextField(10);
 		JTextField titleField = new JTextField(10);
@@ -268,7 +271,7 @@ public class ActivitiesPane extends JPanel {
 			String[] subjects = subjectsField.getText().split(",");
 
 			try {
-				
+
 				// Insert new book into Book table
 				PreparedStatement ps = Library.con
 						.prepareStatement("INSERT INTO book (callNumber, isbn, title, mainAuthor, publisher, year) VALUES (?,?,?,?,?,?)");
@@ -297,7 +300,7 @@ public class ActivitiesPane extends JPanel {
 
 			try {
 				for (int i = 0; i < otherAuthors.length; i++) {
-					
+
 					// Add other entered authors into hasAuthor table
 					PreparedStatement ps = Library.con
 							.prepareStatement("INSERT INTO hasAuthor VALUES (?,?)");
@@ -316,7 +319,7 @@ public class ActivitiesPane extends JPanel {
 
 			try {
 				for (int i = 0; i < subjects.length; i++) {
-					
+
 					// Add subjects into hasSubjects table
 					PreparedStatement ps = Library.con
 							.prepareStatement("INSERT INTO hasSubject VALUES (?,?)");
@@ -339,7 +342,7 @@ public class ActivitiesPane extends JPanel {
 	public void checkout() {
 		// NEED TO THROW ERROR IF CALL NUMBER DOES NOT EXIST
 		// NEED TO SET INDATE
-		
+
 		// User inputs: bid, list of call numbers
 		JTextField bidField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
@@ -347,8 +350,7 @@ public class ActivitiesPane extends JPanel {
 		JComponent[] inputs = new JComponent[] {
 
 		new JLabel("bid:"), bidField, new JLabel("Call number:"),
-				callNumbersField,
-		};
+				callNumbersField, };
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -370,27 +372,51 @@ public class ActivitiesPane extends JPanel {
 					e2.printStackTrace();
 				}
 
+				// Get type of borrower
+				PreparedStatement ps4 = Library.con
+						.prepareStatement("select type from borrower where bid=?");
+				ps4.setInt(1, bid);
+				ps4.executeQuery();
+				ResultSet rs3 = ps4.getResultSet();
+				rs3.next();
+				String type = rs3.getString("type");
+				
+				// Set appropriate inDate for borrower type
+				Date inDate = null;
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(outDate);
+
+				if (type.equals("student")) {
+					cal.add(Calendar.DAY_OF_YEAR, 7);
+					inDate = new Date(cal.getTimeInMillis());
+				}
+				
+				if (type.equals("faculty")) {
+					cal.add(Calendar.DAY_OF_YEAR, 84);
+					inDate = new Date(cal.getTimeInMillis());
+				}
+				
+				if (type.equals("staff")) {
+					cal.add(Calendar.DAY_OF_YEAR, 42);
+					inDate = new Date(cal.getTimeInMillis());
+				}
+				
 				for (int i = 0; i < callNumbers.length; i++) {
-					
-					// Get all copies with the matching callNumber and status being in
+
+					// Get all copies with the matching callNumber and status
+					// being in
 					PreparedStatement ps2 = Library.con
 							.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
 					ps2.setString(1, callNumbers[i]);
 
-					Date inDate = null;
-					try {
-						inDate = new Date(dateFormat.parse(
-								dateFormat.format(currentDate)).getTime());
-					} catch (ParseException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+
 					ps2.executeUpdate();
 					ResultSet rs = ps2.getResultSet();
-					
+
 					if (rs.next() == true) {
-						
-						// Insert into Borrowing table if there exists a copy of the book with status "in"
+
+						// Insert into Borrowing table if there exists a copy of
+						// the book with status "in"
 						String copyNo = rs.getString("copyNo");
 						PreparedStatement ps = Library.con
 								.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
@@ -416,6 +442,8 @@ public class ActivitiesPane extends JPanel {
 						ps.close();
 						ps2.close();
 						ps3.close();
+						rs.close();
+						rs3.close();
 
 					} else {
 						// Error message for if there are no copies in
@@ -426,7 +454,7 @@ public class ActivitiesPane extends JPanel {
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs2 = stmt.executeQuery("SELECT * FROM Borrowing");
 				LibraryGUI.showTable(rs2, "checkoutButton");
-				
+
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -434,120 +462,127 @@ public class ActivitiesPane extends JPanel {
 		}
 	}
 
-	public void returnBooks(){
+	public void returnBooks() {
 		// User inputs: callNumber, copyNo of book to be returned
-				JTextField copyNoField = new JTextField(10);
-				JTextField callNumbersField = new JTextField(10);
+		JTextField copyNoField = new JTextField(10);
+		JTextField callNumbersField = new JTextField(10);
 
-				JComponent[] inputs = new JComponent[] {
+		JComponent[] inputs = new JComponent[] {
 
-				 new JLabel("Call number:"), callNumbersField,new JLabel("Copy Number:"), copyNoField
-				 
-				};
-				int result = JOptionPane.showConfirmDialog(null, inputs,
-						"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
-						JOptionPane.WARNING_MESSAGE);
+		new JLabel("Call number:"), callNumbersField,
+				new JLabel("Copy Number:"), copyNoField
 
-				if (result == JOptionPane.OK_OPTION) {
-					String copyNo = copyNoField.getText();
-					String callNumbers = callNumbersField.getText();
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs,
+				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE);
 
-					try {
-						//get system current date
-						java.util.Date currentDate = new java.util.Date();
-						DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		if (result == JOptionPane.OK_OPTION) {
+			String copyNo = copyNoField.getText();
+			String callNumbers = callNumbersField.getText();
 
-							//Check if the Book was actually checked out and if it was then get due date for the book
-							PreparedStatement ps2 = Library.con
-									.prepareStatement("select Borrowing.inDate, Borrowing.bid, borrowing.borid from Borrowing INNER JOIN BookCopy on Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo where Borrowing.callNumber = ? and Borrowing.copyNo = ? and BookCopy.status like 'out'");
-							ps2.setString(1, callNumbers);
-							ps2.setString(2, copyNo);
-							java.util.Date inDate = null;
-							//Change system dates format
-							try {
-								currentDate = new Date(dateFormat.parse(
-										dateFormat.format(currentDate)).getTime());
-							} catch (ParseException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							//execute above sql query
-							ps2.executeUpdate();
-							ResultSet rs = ps2.getResultSet();
-							//If something was checked out
-							if (rs.next() == true){
-								//get date of the book
-								inDate = rs.getDate("inDate");
-								PreparedStatement ps = null;
-								System.out.println(inDate);
-								System.out.println(currentDate);
-								//Compare the system date with inDate of teh book
-//PEGGGGGYYYYY								//If inDate is before current date then issue a fine
-								if (inDate.before(currentDate)){
-									System.out.println("before");
-									//Random amount of 100 for now
-									ps = Library.con.prepareStatement("INSERT into FINE (amount, issuedDate, borid) values (?, ?, ?)");
-									ps.setInt(1, 100);
-									//change current date to sql date for Issue date of fine
-									Date currentDateFine = null;
-									try {
-										currentDateFine = new Date(dateFormat.parse(
-												dateFormat.format(currentDate)).getTime());
-									} catch (ParseException e1) {
-										// TODO Auto-generated catch block
-										e1.printStackTrace();
-									}
-									//get borid from the above result 
-									ps.setDate(2, currentDateFine);
-									ps.setInt(3, rs.getInt("borid"));
-									ps.executeUpdate();
-									Library.con.commit();
-								}
-								//Check if there is a hold request for the book
-								//If so then change the status to on-hold else change to in
-								//Also need to send an email but dont know how to do that yet
-								PreparedStatement ps3 = Library.con
-										.prepareStatement("select bid, issuedDate from HoldRequest where callNumber = ? ORDER BY issuedDate");
-								ps3.setString(1, callNumbers);
-								ps3.executeUpdate();
-								ResultSet rs2 = ps3.getResultSet();
-								PreparedStatement ps4 = null;
-								//if there is a hold request then create the sql query accordingly
-								if (rs2.next() == true){
-									//Do sth for sending emails
-									ps4 = Library.con.prepareStatement("update BookCopy Set status = 'on-hold' where callNumber = ? and copyNo = ?");
-									ps4.setString(1, callNumbers);
-									ps4.setString(2, copyNo);
-									ps4.execute();
-								}
-								//If no hold request then change the status to in
-								else{
-									ps4 = Library.con.prepareStatement("update BookCopy Set status = 'in' where callNumber = ? and copyNo = ?");
-									ps4.setString(1, callNumbers);
-									ps4.setString(2, copyNo);
-									ps4.execute();
-									Library.con.commit();
-								}
-								Library.con.commit();
-								ps2.close();
-								ps3.close();
-								ps4.close();
-							}
-							else {
-								// Error message for if there are no copies in
-								new ErrorMessage("This copy was not checked out");
-							}
-//PEGGGGGYYYYY							//PRINT TABLE DOES NOT WORK
-//							Statement stmt = Library.con.createStatement();
-//							ResultSet rs2 = stmt.executeQuery("SELECT * FROM Borrowing");
-//							LibraryGUI.showTable(rs2, "processReturnButton");					
-					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+			try {
+				// get system current date
+				java.util.Date currentDate = new java.util.Date();
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+				// Check if the Book was actually checked out and if it was then
+				// get due date for the book
+				PreparedStatement ps2 = Library.con
+						.prepareStatement("select Borrowing.inDate, Borrowing.bid, borrowing.borid from Borrowing INNER JOIN BookCopy on Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo where Borrowing.callNumber = ? and Borrowing.copyNo = ? and BookCopy.status like 'out'");
+				ps2.setString(1, callNumbers);
+				ps2.setString(2, copyNo);
+				java.util.Date inDate = null;
+				// Change system dates format
+				try {
+					currentDate = new Date(dateFormat.parse(
+							dateFormat.format(currentDate)).getTime());
+				} catch (ParseException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-		
+				// execute above sql query
+				ps2.executeUpdate();
+				ResultSet rs = ps2.getResultSet();
+				// If something was checked out
+				if (rs.next() == true) {
+					// get date of the book
+					inDate = rs.getDate("inDate");
+					PreparedStatement ps = null;
+					
+					// Compare the system date with inDate of the book
+					//If inDate is before current date then issue a fine
+					if (inDate.before(currentDate)) {
+						System.out.println("before");
+						// Random amount of 100 for now
+						ps = Library.con
+								.prepareStatement("INSERT into FINE (amount, issuedDate, borid) values (?, ?, ?)");
+						ps.setInt(1, 100);
+						// change current date to sql date for Issue date of
+						// fine
+						Date currentDateFine = null;
+						try {
+							currentDateFine = new Date(dateFormat.parse(
+									dateFormat.format(currentDate)).getTime());
+						} catch (ParseException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						// get borid from the above result
+						ps.setDate(2, currentDateFine);
+						ps.setInt(3, rs.getInt("borid"));
+						ps.executeUpdate();
+						Library.con.commit();
+					}
+					// Check if there is a hold request for the book
+					// If so then change the status to on-hold else change to in
+					// Also need to send an email but dont know how to do that
+					// yet
+					PreparedStatement ps3 = Library.con
+							.prepareStatement("select bid, issuedDate from HoldRequest where callNumber = ? ORDER BY issuedDate");
+					ps3.setString(1, callNumbers);
+					ps3.executeQuery();
+					ResultSet rs2 = ps3.getResultSet();
+					PreparedStatement ps4 = null;
+					// if there is a hold request then create the sql query
+					// accordingly
+					if (rs2.next() == true) {
+						// Do sth for sending emails
+						ps4 = Library.con
+								.prepareStatement("update BookCopy Set status = 'on-hold' where callNumber = ? and copyNo = ?");
+						ps4.setString(1, callNumbers);
+						ps4.setString(2, copyNo);
+						ps4.execute();
+					}
+					// If no hold request then change the status to in
+					else {
+						ps4 = Library.con
+								.prepareStatement("update BookCopy Set status = 'in' where callNumber = ? and copyNo = ?");
+						ps4.setString(1, callNumbers);
+						ps4.setString(2, copyNo);
+						ps4.execute();
+						Library.con.commit();
+					}
+					Library.con.commit();
+					ps2.close();
+					ps3.close();
+					ps4.close();
+				} else {
+					// Error message for if there are no copies in
+					new ErrorMessage("This copy was not checked out");
+				}
+				// Display the table
+				Statement stmt = Library.con.createStatement();
+				ResultSet rs2 = stmt.executeQuery("SELECT * FROM bookcopy");
+				LibraryGUI.showTable(rs2, "processReturnButton");
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+
 	}
+
 	public void searchForBooks() {
 
 	}
@@ -574,7 +609,7 @@ public class ActivitiesPane extends JPanel {
 						.prepareStatement("select * from bookcopy where callNumber = ?");
 
 				ps.setString(1, callNumber);
-				ps.executeUpdate();
+				ps.executeQuery();
 				ResultSet rs = ps.getResultSet();
 
 				List<String> copies = new ArrayList<String>();
@@ -586,7 +621,7 @@ public class ActivitiesPane extends JPanel {
 				// copyNo for the new copy
 				String copyNum = Integer.toString(copies.size() + 1);
 
-				// Add copy to BookCopy table 
+				// Add copy to BookCopy table
 				PreparedStatement ps2 = Library.con
 						.prepareStatement("insert into BookCopy (callNumber, copyNo, status) VALUES (?,?,?)");
 				ps2.setString(1, callNumber);
