@@ -9,6 +9,7 @@ public class TablePane extends JPanel{
 	public TablePane()
 	{
 		new FlowLayout(FlowLayout.RIGHT, 20, 10);
+		
 	}
 	public void display() {
 		JScrollPane scrollPane = new JScrollPane(this,

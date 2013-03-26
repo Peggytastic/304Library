@@ -335,6 +335,8 @@ public class LibraryGUI {
 
 	}
 	public static void showAccountTables(ResultSet rs1, ResultSet rs2, ResultSet rs3, int bid) {
+		// Tables won't set size properly!!!
+		
 		int numCols1;
 		int numCols2;
 		int numCols3;
@@ -349,52 +351,164 @@ public class LibraryGUI {
 		try {
 
 			rsmd1 = rs1.getMetaData();
+			rsmd2 = rs2.getMetaData();
+			rsmd3 = rs3.getMetaData();
 			
 			numCols1 = rsmd1.getColumnCount();
+			numCols2 = rsmd2.getColumnCount();
+			numCols3 = rsmd3.getColumnCount();
 
+			// Get column names for checked out table
 			String columnNames1[] = new String[numCols1];
 			for (int i = 0; i < numCols1; i++) {
 				columnNames1[i] = rsmd1.getColumnName(i + 1);
 			}
 			
-			PreparedStatement ps2 = Library.con.prepareStatement("select callnumber, copyno from bookcopy where status like 'out' and callnumber in (select callnumber from borrowing where bid=?)");
+			// Get column names for fines table
+			String columnNames2[] = new String[numCols2];
+			for (int i = 0; i < numCols2; i++) {
+				columnNames2[i] = rsmd2.getColumnName(i + 1);
+			}
+			
+			// Get column names for holds table
+			String columnNames3[] = new String[numCols3];
+			for (int i = 0; i < numCols3; i++) {
+				columnNames3[i] = rsmd3.getColumnName(i + 1);
+			}
+			
+			
+			// Get table sizes
+			PreparedStatement ps1 = Library.con.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
+			ps1.setInt(1, bid);
+			ps1.executeQuery();
+			
+			PreparedStatement ps2 = Library.con.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
 			ps2.setInt(1, bid);
 			ps2.executeQuery();
 			
+			PreparedStatement ps3 = Library.con.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
+			ps3.setInt(1, bid);
+			ps3.executeQuery();
+			
 			List<String> checkedOut = new ArrayList<String>();
-			ResultSet count1 = ps2.getResultSet();
+			ResultSet count1 = ps1.getResultSet();
 			while (count1.next()) {
-				checkedOut.add(count1.getString("callNumber"));
+				checkedOut.add(count1.getString("borid"));
 			}
 			Object data1[][] = new Object[checkedOut.size()][numCols1];
 			count1.close();
 			
+			List<String> fines = new ArrayList<String>();
+			ResultSet count2 = ps2.getResultSet();
+			while (count2.next()) {
+				fines.add(count2.getString("amount"));
+			}
+			Object data2[][] = new Object[fines.size()][numCols2];
+			count2.close();
+			
+			List<String> holds = new ArrayList<String>();
+			ResultSet count3 = ps3.getResultSet();
+			while (count3.next()) {
+				holds.add(count3.getString("callNumber"));
+			}
+			Object data3[][] = new Object[holds.size()][numCols3];
+			count3.close();
+			
+			int borid;
 			String callNumber;
 			String copyNo;
+			Date outDate;
+			Date inDate;
+			
 			int j = 0;
+			
+			// Fill checked out table
 			while (rs1.next()) {
+				borid = rs1.getInt("borid");
 				callNumber = rs1.getString("callNumber");
 				copyNo = rs1.getString("copyNo");
-				Object tuple[] = { callNumber, copyNo };
+				outDate = rs1.getDate("outDate");
+				inDate = rs1.getDate("inDate");
+				Object tuple[] = { borid, callNumber, copyNo, outDate, inDate };
 				data1[j] = tuple;
 				j++;
 
 			}
 			
-			rs1.close();
+			int fid;
+			String amount;
+			Date issuedDate;
 			
+			j=0;
+			
+			// Fill fines table
+			while (rs2.next()) {
+				fid = rs2.getInt("fid");
+				amount = rs2.getString("amount");
+				issuedDate = rs2.getDate("issuedDate");
+				Object tuple[] = { fid, amount, issuedDate };
+				data2[j] = tuple;
+				j++;
+
+			}
+			
+			int hid;
+			Date issuedDate2;
+			String isbn;
+			String callNumber2;
+			String title;
+			
+			
+			j=0;
+			
+			// Fill holds table
+			while (rs3.next()) {
+				hid = rs3.getInt("hid");
+				issuedDate2 = rs3.getDate("issuedDate");
+				isbn = rs3.getString("isbn");
+				callNumber2 = rs3.getString("callNumber");
+				title = rs3.getString("title");
+				Object tuple[] = { hid, issuedDate2, isbn, callNumber2, title };
+				data2[j] = tuple;
+				j++;
+
+			}
+			rs1.close();
+			rs2.close();
+			rs3.close();
+			
+			// View tables
 			JTable checkedOutTable = new JTable(data1, columnNames1);
 			checkedOutTable.setEnabled(false);
-			JScrollPane scrollPane = new JScrollPane(checkedOutTable);
+			JScrollPane scrollPane1 = new JScrollPane(checkedOutTable);
 			checkedOutTable.setAutoCreateRowSorter(true);
+			
+			JTable fineTable = new JTable(data2, columnNames2);
+			fineTable.setEnabled(false);
+			JScrollPane scrollPane2 = new JScrollPane(fineTable);
+			fineTable.setAutoCreateRowSorter(true);
 
-			// Display table
-			checkedOutTable.setFillsViewportHeight(true);
+			JTable holdsTable = new JTable(data3, columnNames3);
+			holdsTable.setEnabled(false);
+			JScrollPane scrollPane3 = new JScrollPane(holdsTable);
+			holdsTable.setAutoCreateRowSorter(true);
+
+			
+			fineTable.setFillsViewportHeight(true);
+			
 			tablePane.removeAll();
 			tablePane.updateUI();
 			tableTitle1.setEditable(false);
 			tablePane.add(tableTitle1);
-			tablePane.add(scrollPane);
+			tablePane.add(scrollPane1);
+			
+			tableTitle2.setEditable(false);
+			tablePane.add(tableTitle2);
+			tablePane.add(scrollPane2);
+			
+			tableTitle3.setEditable(false);
+			tablePane.add(tableTitle3);
+			tablePane.add(scrollPane3);
 	
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

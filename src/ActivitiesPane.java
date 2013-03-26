@@ -630,11 +630,22 @@ public class ActivitiesPane extends JPanel {
 				else{
 					
 					// Select items the borrower has currently borrowed and not yet returned
-					PreparedStatement ps2 = Library.con.prepareStatement("select callnumber, copyno from bookcopy where status like 'out' and callnumber in (select callnumber from borrowing where bid=?)");
+					PreparedStatement ps2 = Library.con.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
 					ps2.setInt(1, bid);
 					ps2.executeQuery();
-					LibraryGUI.showAccountTables(ps2.getResultSet(), null, null, bid);
-
+					
+					// Select outstanding fines
+					PreparedStatement ps3 = Library.con.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
+					ps3.setInt(1, bid);
+					ps3.executeQuery();
+					
+					// Select hold requests
+					PreparedStatement ps4 = Library.con.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
+					ps4.setInt(1, bid);
+					ps4.executeQuery();
+					
+					// Show table
+					LibraryGUI.showAccountTables(ps2.getResultSet(), ps3.getResultSet(), ps4.getResultSet(), bid);
 				}
 				
 			} catch (SQLException e) {
