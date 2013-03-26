@@ -5,6 +5,7 @@ import java.awt.Font;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -44,11 +45,11 @@ public class LibraryGUI {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// Panel for viewing the tables
-		tablePane = new TablePane(); 
+		tablePane = new TablePane();
 		tablePane.setBorder(BorderFactory.createLineBorder(Color.black));
 
 		// Panel for displaying types of users
-		userPane = new JPanel(); 
+		userPane = new JPanel();
 		userPane.setLayout(new BoxLayout(userPane, BoxLayout.Y_AXIS));
 		userPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		Font font = new Font("Arial", Font.BOLD, 16);
@@ -78,10 +79,20 @@ public class LibraryGUI {
 	// Method for initializing the menu
 	private void initializeMenu() {
 
-		JMenu Library;
+		JMenu Lib;
 		JMenuItem quit;
 
-		Library = new JMenu("Library");
+		JMenu Tables;
+		JMenuItem Borrower;
+		JMenuItem Book;
+		JMenuItem HasAuthor;
+		JMenuItem HasSubject;
+		JMenuItem BookCopy;
+		JMenuItem HoldRequest;
+		JMenuItem Borrowing;
+		JMenuItem Fine;
+
+		Lib = new JMenu("Library");
 
 		// Exits the application
 		quit = new JMenuItem("Quit");
@@ -92,11 +103,582 @@ public class LibraryGUI {
 			}
 		});
 
-		Library.add(quit);
+		Lib.add(quit);
+
+		Tables = new JMenu("Tables");
+
+		// Display borrower table
+		Borrower = new JMenuItem("Borrower");
+		Borrower.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt.executeQuery("SELECT * FROM Borrower");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2
+							.executeQuery("SELECT * FROM Borrower");
+					List<Integer> borrowers = new ArrayList<Integer>();
+					while (count.next()) {
+						borrowers.add(count.getInt("bid"));
+					}
+					
+					Object data[][] = new Object[borrowers.size()][numCols];
+					count.close();
+
+					int bid;
+					String password;
+					String name;
+					String address;
+					int phone;
+					String emailAddress;
+					int sinOrStNo;
+					String type;
+					String expiryDate;
+					
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						bid = rs.getInt("bid");
+						password = rs.getString("password");
+						name = rs.getString("name");
+						address = rs.getString("address");
+						phone = rs.getInt("phone");
+						emailAddress = rs.getString("emailAddress");
+						sinOrStNo = rs.getInt("sinOrStNo");
+						type = rs.getString("type");
+						expiryDate = rs.getString("expiryDate");
+						
+						Object tuple[] = { bid, password, name, address, phone,
+								emailAddress, sinOrStNo, type, expiryDate };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("Borrower");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display book table
+		Book = new JMenuItem("Book");
+		Book.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt.executeQuery("SELECT * FROM Book");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2.executeQuery("SELECT * FROM Book");
+					List<String> books = new ArrayList<String>();
+					while (count.next()) {
+						books.add(count.getString("callNumber"));
+					}
+					
+					Object data[][] = new Object[books.size()][numCols];
+					count.close();
+
+					String callNumber;
+					String isbn;
+					String title;
+					String mainAuthor;
+					String publisher;
+					int year;
+					
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						callNumber = rs.getString("callNumber");
+						isbn = rs.getString("isbn");
+						title = rs.getString("title");
+						mainAuthor = rs.getString("mainAuthor");
+						publisher = rs.getString("publisher");
+						year = rs.getInt("year");
+
+						Object tuple[] = { callNumber, isbn, title, mainAuthor,
+								publisher, year };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("Book");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display HasAuthor table
+		HasAuthor = new JMenuItem("HasAuthor");
+		HasAuthor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt.executeQuery("SELECT * FROM HasAuthor");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+
+					}
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2
+							.executeQuery("SELECT * FROM HasAuthor");
+					List<String> authors = new ArrayList<String>();
+					while (count.next()) {
+						authors.add(count.getString("callNumber"));
+					}
+					
+					Object data[][] = new Object[authors.size()][numCols];
+					count.close();
+
+					String callNumber;
+					String name;
+
+					int j = 0;
+					
+					// Fill table
+					while (rs.next()) {
+						callNumber = rs.getString("callNumber");
+						name = rs.getString("name");
+
+						Object tuple[] = { callNumber, name };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("HasAuthor");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display HasSubject table
+		HasSubject = new JMenuItem("HasSubject");
+		HasSubject.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt
+							.executeQuery("SELECT * FROM HasSubject");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2
+							.executeQuery("SELECT * FROM HasSubject");
+					List<String> subjects = new ArrayList<String>();
+					while (count.next()) {
+						subjects.add(count.getString("callNumber"));
+					}
+					
+					Object data[][] = new Object[subjects.size()][numCols];
+					count.close();
+
+					String callNumber;
+					String subject;
+
+					int j = 0;
+					
+					// Fill table
+					while (rs.next()) {
+						callNumber = rs.getString("callNumber");
+						subject = rs.getString("subject");
+
+						Object tuple[] = { callNumber, subject };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("HasSubject");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display BookCopy table
+		BookCopy = new JMenuItem("BookCopy");
+		BookCopy.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt.executeQuery("SELECT * FROM BookCopy");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2
+							.executeQuery("SELECT * FROM BookCopy");
+					List<String> copies = new ArrayList<String>();
+					while (count.next()) {
+						copies.add(count.getString("callNumber"));
+					}
+					
+					Object data[][] = new Object[copies.size()][numCols];
+					count.close();
+
+					String callNumber;
+					String copyNo;
+					String status;
+					
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						callNumber = rs.getString("callNumber");
+						copyNo = rs.getString("copyNo");
+						status = rs.getString("status");
+						
+						Object tuple[] = { callNumber, copyNo, status };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("BookCopy");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display HoldRequest table
+		HoldRequest = new JMenuItem("HoldRequest");
+		HoldRequest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt
+							.executeQuery("SELECT * FROM HoldRequest");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2
+							.executeQuery("SELECT * FROM HoldRequest");
+					List<Integer> holds = new ArrayList<Integer>();
+					while (count.next()) {
+						holds.add(count.getInt("hid"));
+					}
+					
+					Object data[][] = new Object[holds.size()][numCols];
+					count.close();
+
+					int hid;
+					int bid;
+					String callNumber;
+					Date issuedDate;
+
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						hid = rs.getInt("hid");
+						bid = rs.getInt("bid");
+						callNumber = rs.getString("callNumber");
+						issuedDate = rs.getDate("issuedDate");
+						
+						Object tuple[] = { hid, bid, callNumber, issuedDate };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("HoldRequest");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display Borrowing table
+		Borrowing = new JMenuItem("Borrowing");
+		Borrowing.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt.executeQuery("SELECT * FROM Borrowing");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2
+							.executeQuery("SELECT * FROM Borrowing");
+					List<Integer> borrowings = new ArrayList<Integer>();
+					while (count.next()) {
+						borrowings.add(count.getInt("borid"));
+					}
+					
+					Object data[][] = new Object[borrowings.size()][numCols];
+					count.close();
+
+					int borid;
+					int bid;
+					String callNumber;
+					String copyNo;
+					Date outDate;
+					Date inDate;
+					
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						borid = rs.getInt("borid");
+						bid = rs.getInt("bid");
+						callNumber = rs.getString("callNumber");
+						copyNo = rs.getString("copyNo");
+						outDate = rs.getDate("outDate");
+						inDate = rs.getDate("inDate");
+						
+						Object tuple[] = { borid, bid, callNumber, copyNo,
+								outDate, inDate };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("Borrowing");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+					
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		// Display Fine table
+		Fine = new JMenuItem("Fine");
+		Fine.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Statement stmt = Library.con.createStatement();
+					ResultSet rs = stmt.executeQuery("SELECT * FROM Fine");
+					ResultSetMetaData rsmd = rs.getMetaData();
+
+					int numCols = rsmd.getColumnCount();
+
+					String columnNames[] = new String[numCols];
+					for (int i = 0; i < numCols; i++) {
+						columnNames[i] = rsmd.getColumnName(i + 1);
+					}
+					
+					Statement stmt2 = Library.con.createStatement();
+					ResultSet count = stmt2.executeQuery("SELECT * FROM Fine");
+					List<Integer> fines = new ArrayList<Integer>();
+					while (count.next()) {
+						fines.add(count.getInt("fid"));
+					}
+					
+					Object data[][] = new Object[fines.size()][numCols];
+					count.close();
+
+					int fid;
+					String amount;
+					Date issuedDate;
+					Date paidDate;
+					int borid;
+
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						fid = rs.getInt("fid");
+						amount = rs.getString("amount");
+						issuedDate = rs.getDate("issuedDate");
+						paidDate = rs.getDate("paidDate");
+						borid = rs.getInt("borid");
+
+						Object tuple[] = { fid, amount, issuedDate, paidDate,
+								borid };
+						data[j] = tuple;
+
+						j++;
+					}
+
+					JTable table = new JTable(data, columnNames);
+					JTextArea tableTitle = new JTextArea("Fine");
+					table.setEnabled(false);
+					JScrollPane scrollPane = new JScrollPane(table);
+					table.setAutoCreateRowSorter(true);
+
+					// Display table
+					table.setFillsViewportHeight(true);
+					tablePane.removeAll();
+					tablePane.updateUI();
+					tableTitle.setEditable(false);
+					tablePane.add(tableTitle);
+					tablePane.add(scrollPane);
+
+				} catch (SQLException ex) {
+					// TODO Auto-generated catch block
+					ex.printStackTrace();
+				}
+			}
+		});
+
+		Tables.add(Borrower);
+		Tables.add(Book);
+		Tables.add(HasAuthor);
+		Tables.add(HasSubject);
+		Tables.add(BookCopy);
+		Tables.add(HoldRequest);
+		Tables.add(Borrowing);
+		Tables.add(Fine);
 
 		menuBar = new JMenuBar();
-		menuBar.add(Library);
-
+		menuBar.add(Lib);
+		menuBar.add(Tables);
 		frame.setJMenuBar(menuBar);
 	}
 
@@ -113,46 +695,38 @@ public class LibraryGUI {
 
 		clerkButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
 				activitiesPane.removeAll();
 				activitiesPane.updateUI();
 				activitiesPane.display("Clerk");
 			}
-
 		});
+		
 		borrowerButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
 				activitiesPane.removeAll();
 				activitiesPane.updateUI();
 				activitiesPane.display("Borrower");
 			}
-
 		});
+		
 		librarianButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
 				activitiesPane.removeAll();
 				activitiesPane.updateUI();
 				activitiesPane.display("Librarian");
 			}
-
 		});
-
 	}
 
 	public static void showTable(ResultSet rs, String buttonClicked) {
 
 		int numCols;
 		ResultSetMetaData rsmd;
-
 		JTextArea tableTitle = null;
 		JTable table = null;
 
 		try {
-
-				rsmd = rs.getMetaData();
-			
+			rsmd = rs.getMetaData();
 			numCols = rsmd.getColumnCount();
 
 			String columnNames[] = new String[numCols];
@@ -169,6 +743,7 @@ public class LibraryGUI {
 				while (count.next()) {
 					borrowers.add(count.getInt("bid"));
 				}
+				
 				Object data[][] = new Object[borrowers.size()][numCols];
 				count.close();
 
@@ -182,7 +757,7 @@ public class LibraryGUI {
 				String type;
 				String expiryDate;
 				int j = 0;
-				
+
 				// Fill table
 				while (rs.next()) {
 					bid = rs.getInt("bid");
@@ -202,7 +777,6 @@ public class LibraryGUI {
 				}
 				tableTitle = new JTextArea("Borrower table");
 				table = new JTable(data, columnNames);
-
 			}
 
 			if (buttonClicked == "addBookButton") {
@@ -224,7 +798,7 @@ public class LibraryGUI {
 				String publisher;
 				int year;
 				int j = 0;
-				
+
 				// Fill table
 				while (rs.next()) {
 					callNumber = rs.getString("callNumber");
@@ -245,7 +819,8 @@ public class LibraryGUI {
 				table = new JTable(data, columnNames);
 			}
 
-			if (buttonClicked == "addBookCopyButton"  || buttonClicked == "processReturnButton") {
+			if (buttonClicked == "addBookCopyButton"
+					|| buttonClicked == "processReturnButton") {
 
 				// For creating the size of the table
 				Statement stmt = Library.con.createStatement();
@@ -261,7 +836,7 @@ public class LibraryGUI {
 				String copyNo;
 				String status;
 				int j = 0;
-				
+
 				// Fill table
 				while (rs.next()) {
 					callNumber = rs.getString("callNumber");
@@ -274,7 +849,6 @@ public class LibraryGUI {
 				}
 				tableTitle = new JTextArea("BookCopy table");
 				table = new JTable(data, columnNames);
-
 			}
 
 			if (buttonClicked == "checkoutButton") {
@@ -296,7 +870,7 @@ public class LibraryGUI {
 				Date outDate;
 				Date inDate;
 				int j = 0;
-				
+
 				// Fill table
 				while (rs.next()) {
 					borid = rs.getInt("borid");
@@ -305,17 +879,15 @@ public class LibraryGUI {
 					copyNo = rs.getString("copyNo");
 					outDate = rs.getDate("outDate");
 					inDate = rs.getDate("inDate");
-					Object tuple[] = { borid, bid, callNumber, copyNo, outDate, inDate };
+					Object tuple[] = { borid, bid, callNumber, copyNo, outDate,
+							inDate };
 					data[j] = tuple;
 					j++;
-
 				}
 				tableTitle = new JTextArea("Borrowing table");
 				table = new JTable(data, columnNames);
-
 			}
-			
-			
+
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
 			table.setAutoCreateRowSorter(true);
@@ -334,9 +906,11 @@ public class LibraryGUI {
 		}
 
 	}
-	public static void showAccountTables(ResultSet rs1, ResultSet rs2, ResultSet rs3, int bid) {
+
+	public static void showAccountTables(ResultSet rs1, ResultSet rs2,
+			ResultSet rs3, int bid) {
 		// Tables won't set size properly!!!
-		
+
 		int numCols1;
 		int numCols2;
 		int numCols3;
@@ -353,7 +927,7 @@ public class LibraryGUI {
 			rsmd1 = rs1.getMetaData();
 			rsmd2 = rs2.getMetaData();
 			rsmd3 = rs3.getMetaData();
-			
+
 			numCols1 = rsmd1.getColumnCount();
 			numCols2 = rsmd2.getColumnCount();
 			numCols3 = rsmd3.getColumnCount();
@@ -363,33 +937,35 @@ public class LibraryGUI {
 			for (int i = 0; i < numCols1; i++) {
 				columnNames1[i] = rsmd1.getColumnName(i + 1);
 			}
-			
+
 			// Get column names for fines table
 			String columnNames2[] = new String[numCols2];
 			for (int i = 0; i < numCols2; i++) {
 				columnNames2[i] = rsmd2.getColumnName(i + 1);
 			}
-			
+
 			// Get column names for holds table
 			String columnNames3[] = new String[numCols3];
 			for (int i = 0; i < numCols3; i++) {
 				columnNames3[i] = rsmd3.getColumnName(i + 1);
 			}
-			
-			
+
 			// Get table sizes
-			PreparedStatement ps1 = Library.con.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
+			PreparedStatement ps1 = Library.con
+					.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
 			ps1.setInt(1, bid);
 			ps1.executeQuery();
-			
-			PreparedStatement ps2 = Library.con.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
+
+			PreparedStatement ps2 = Library.con
+					.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
 			ps2.setInt(1, bid);
 			ps2.executeQuery();
-			
-			PreparedStatement ps3 = Library.con.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
+
+			PreparedStatement ps3 = Library.con
+					.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
 			ps3.setInt(1, bid);
 			ps3.executeQuery();
-			
+
 			List<String> checkedOut = new ArrayList<String>();
 			ResultSet count1 = ps1.getResultSet();
 			while (count1.next()) {
@@ -397,7 +973,7 @@ public class LibraryGUI {
 			}
 			Object data1[][] = new Object[checkedOut.size()][numCols1];
 			count1.close();
-			
+
 			List<String> fines = new ArrayList<String>();
 			ResultSet count2 = ps2.getResultSet();
 			while (count2.next()) {
@@ -405,7 +981,7 @@ public class LibraryGUI {
 			}
 			Object data2[][] = new Object[fines.size()][numCols2];
 			count2.close();
-			
+
 			List<String> holds = new ArrayList<String>();
 			ResultSet count3 = ps3.getResultSet();
 			while (count3.next()) {
@@ -413,15 +989,15 @@ public class LibraryGUI {
 			}
 			Object data3[][] = new Object[holds.size()][numCols3];
 			count3.close();
-			
+
 			int borid;
 			String callNumber;
 			String copyNo;
 			Date outDate;
 			Date inDate;
-			
+
 			int j = 0;
-			
+
 			// Fill checked out table
 			while (rs1.next()) {
 				borid = rs1.getInt("borid");
@@ -434,13 +1010,13 @@ public class LibraryGUI {
 				j++;
 
 			}
-			
+
 			int fid;
 			String amount;
 			Date issuedDate;
-			
-			j=0;
-			
+
+			j = 0;
+
 			// Fill fines table
 			while (rs2.next()) {
 				fid = rs2.getInt("fid");
@@ -451,16 +1027,15 @@ public class LibraryGUI {
 				j++;
 
 			}
-			
+
 			int hid;
 			Date issuedDate2;
 			String isbn;
 			String callNumber2;
 			String title;
-			
-			
-			j=0;
-			
+
+			j = 0;
+
 			// Fill holds table
 			while (rs3.next()) {
 				hid = rs3.getInt("hid");
@@ -476,13 +1051,13 @@ public class LibraryGUI {
 			rs1.close();
 			rs2.close();
 			rs3.close();
-			
+
 			// View tables
 			JTable checkedOutTable = new JTable(data1, columnNames1);
 			checkedOutTable.setEnabled(false);
 			JScrollPane scrollPane1 = new JScrollPane(checkedOutTable);
 			checkedOutTable.setAutoCreateRowSorter(true);
-			
+
 			JTable fineTable = new JTable(data2, columnNames2);
 			fineTable.setEnabled(false);
 			JScrollPane scrollPane2 = new JScrollPane(fineTable);
@@ -493,23 +1068,22 @@ public class LibraryGUI {
 			JScrollPane scrollPane3 = new JScrollPane(holdsTable);
 			holdsTable.setAutoCreateRowSorter(true);
 
-			
 			fineTable.setFillsViewportHeight(true);
-			
+
 			tablePane.removeAll();
 			tablePane.updateUI();
 			tableTitle1.setEditable(false);
 			tablePane.add(tableTitle1);
 			tablePane.add(scrollPane1);
-			
+
 			tableTitle2.setEditable(false);
 			tablePane.add(tableTitle2);
 			tablePane.add(scrollPane2);
-			
+
 			tableTitle3.setEditable(false);
 			tablePane.add(tableTitle3);
 			tablePane.add(scrollPane3);
-	
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

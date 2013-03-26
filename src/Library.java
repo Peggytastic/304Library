@@ -182,6 +182,9 @@ public class Library implements ActionListener {
 		library.showGUI();
 	}
 	
+	public Connection getCon(){
+		return con;
+	}
 	
 	public static void main(String args[])
     {

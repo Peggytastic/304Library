@@ -86,14 +86,13 @@ public class ActivitiesPane extends JPanel {
 			this.add(checkAccountButton);
 			this.add(placeHoldButton);
 			this.add(payFineButton);
-			
+
 			checkAccountButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 
 					checkAccount();
 				}
 			});
-
 		}
 
 		if (user == "Librarian") {
@@ -122,9 +121,7 @@ public class ActivitiesPane extends JPanel {
 			this.add(addBookCopyButton);
 			this.add(genReportCheckoutButton);
 			this.add(genReportPopularButton);
-
 		}
-
 	}
 
 	public void addBorrower() {
@@ -169,14 +166,14 @@ public class ActivitiesPane extends JPanel {
 		expiryPanel.add(dayCombo);
 
 		JComponent[] inputs = new JComponent[] {
-
-		new JLabel("Password:"), passwordField, new JLabel("Name:"), nameField,
-				new JLabel("Address:"), addressField, new JLabel("Phone:"),
-				phoneField, new JLabel("Email:"), emailAddressField,
+				new JLabel("Password:"), passwordField, 
+				new JLabel("Name:"), nameField,
+				new JLabel("Address:"), addressField, 
+				new JLabel("Phone:"),phoneField, 
+				new JLabel("Email:"), emailAddressField,
 				new JLabel("Sin or St No.:"), sinOrStNoField,
-				new JLabel("Type:"), typeCombo, new JLabel("Expiration date"),
-				expiryPanel,
-
+				new JLabel("Type:"), typeCombo, 
+				new JLabel("Expiration date"),expiryPanel,
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrower info", JOptionPane.OK_CANCEL_OPTION,
@@ -237,7 +234,6 @@ public class ActivitiesPane extends JPanel {
 				e1.printStackTrace();
 			}
 		}
-
 	}
 
 	public void addBook() {
@@ -254,15 +250,16 @@ public class ActivitiesPane extends JPanel {
 		JTextField subjectsField = new JTextField(100);
 
 		JComponent[] inputs = new JComponent[] {
-
-		new JLabel("Call number:"), callNumberField, new JLabel("isbn:"),
-				isbnField, new JLabel("Title:"), titleField,
+				new JLabel("Call number:"), callNumberField, 
+				new JLabel("isbn:"), isbnField, 
+				new JLabel("Title:"), titleField,
 				new JLabel("Main author:"), mainAuthorField,
 				new JLabel("Other authors:"), otherAuthorsField,
-				new JLabel("Publisher:"), publisherField, new JLabel("Year:"),
-				yearField, new JLabel("Subjects:"), subjectsField
-
+				new JLabel("Publisher:"), publisherField, 
+				new JLabel("Year:"),yearField, 
+				new JLabel("Subjects:"), subjectsField
 		};
+		
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter book info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -343,7 +340,6 @@ public class ActivitiesPane extends JPanel {
 				e1.printStackTrace();
 			}
 		}
-
 	}
 
 	public void checkout() {
@@ -386,7 +382,7 @@ public class ActivitiesPane extends JPanel {
 				ResultSet rs3 = ps4.getResultSet();
 				rs3.next();
 				String type = rs3.getString("type");
-				
+
 				// Set appropriate inDate for borrower type
 				Date inDate = null;
 				Calendar cal = Calendar.getInstance();
@@ -396,17 +392,17 @@ public class ActivitiesPane extends JPanel {
 					cal.add(Calendar.DAY_OF_YEAR, 7);
 					inDate = new Date(cal.getTimeInMillis());
 				}
-				
+
 				if (type.equals("faculty")) {
 					cal.add(Calendar.DAY_OF_YEAR, 84);
 					inDate = new Date(cal.getTimeInMillis());
 				}
-				
+
 				if (type.equals("staff")) {
 					cal.add(Calendar.DAY_OF_YEAR, 42);
 					inDate = new Date(cal.getTimeInMillis());
 				}
-				
+
 				for (int i = 0; i < callNumbers.length; i++) {
 
 					// Get all copies with the matching callNumber and status
@@ -414,7 +410,6 @@ public class ActivitiesPane extends JPanel {
 					PreparedStatement ps2 = Library.con
 							.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
 					ps2.setString(1, callNumbers[i]);
-
 
 					ps2.executeUpdate();
 					ResultSet rs = ps2.getResultSet();
@@ -474,11 +469,10 @@ public class ActivitiesPane extends JPanel {
 		JTextField callNumbersField = new JTextField(10);
 
 		JComponent[] inputs = new JComponent[] {
-
-		new JLabel("Call number:"), callNumbersField,
+				new JLabel("Call number:"), callNumbersField,
 				new JLabel("Copy Number:"), copyNoField
-
 		};
+		
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -515,9 +509,9 @@ public class ActivitiesPane extends JPanel {
 					// get date of the book
 					inDate = rs.getDate("inDate");
 					PreparedStatement ps = null;
-					
+
 					// Compare the system date with inDate of the book
-					//If inDate is before current date then issue a fine
+					// If inDate is before current date then issue a fine
 					if (inDate.before(currentDate)) {
 						System.out.println("before");
 						// Random amount of 100 for now
@@ -586,23 +580,20 @@ public class ActivitiesPane extends JPanel {
 				e1.printStackTrace();
 			}
 		}
-
 	}
 
 	public void searchForBooks() {
 
 	}
-	
-	public void checkAccount(){
+
+	public void checkAccount() {
 
 		// User inputs: bid, password
 		JTextField bidField = new JTextField(15);
 		JTextField passwordField = new JTextField(15);
 
-		JComponent[] inputs = new JComponent[] { new JLabel("bid:"),
-				bidField,
-				new JLabel("password:"),
-				passwordField,
+		JComponent[] inputs = new JComponent[] { new JLabel("bid:"), bidField,
+				new JLabel("password:"), passwordField,
 
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs,
@@ -611,53 +602,54 @@ public class ActivitiesPane extends JPanel {
 
 		if (result == JOptionPane.OK_OPTION) {
 			int bid = Integer.parseInt(bidField.getText());
-			
+
 			String password = passwordField.getText();
-			
+
 			try {
-				PreparedStatement ps = Library.con.prepareStatement("select * from borrower where bid = ?");
+				PreparedStatement ps = Library.con
+						.prepareStatement("select * from borrower where bid = ?");
 				ps.setInt(1, bid);
 				ps.executeQuery();
-				
+
 				ResultSet rs = ps.getResultSet();
 				rs.next();
-				
+
 				// Check if password is correct
-				if (!rs.getString("password").equals(password)){
+				if (!rs.getString("password").equals(password)) {
 					new ErrorMessage("Incorrect password!");
 				}
-				
-				else{
-					
-					// Select items the borrower has currently borrowed and not yet returned
-					PreparedStatement ps2 = Library.con.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
+
+				else {
+
+					// Select items the borrower has currently borrowed and not
+					// yet returned
+					PreparedStatement ps2 = Library.con
+							.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
 					ps2.setInt(1, bid);
 					ps2.executeQuery();
-					
+
 					// Select outstanding fines
-					PreparedStatement ps3 = Library.con.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
+					PreparedStatement ps3 = Library.con
+							.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
 					ps3.setInt(1, bid);
 					ps3.executeQuery();
-					
+
 					// Select hold requests
-					PreparedStatement ps4 = Library.con.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
+					PreparedStatement ps4 = Library.con
+							.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
 					ps4.setInt(1, bid);
 					ps4.executeQuery();
-					
-					// Show table
-					LibraryGUI.showAccountTables(ps2.getResultSet(), ps3.getResultSet(), ps4.getResultSet(), bid);
+
+					// Show tables
+					LibraryGUI.showAccountTables(ps2.getResultSet(),
+							ps3.getResultSet(), ps4.getResultSet(), bid);
 				}
-				
+
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			
 		}
-
-	
-		
 	}
 
 	public void addBookCopy() {
@@ -718,8 +710,6 @@ public class ActivitiesPane extends JPanel {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
-
 	}
 }
