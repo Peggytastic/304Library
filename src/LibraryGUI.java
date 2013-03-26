@@ -245,7 +245,7 @@ public class LibraryGUI {
 				table = new JTable(data, columnNames);
 			}
 
-			if (buttonClicked == "addBookCopyButton" || buttonClicked == "processReturnButton") {
+			if (buttonClicked == "addBookCopyButton"  || buttonClicked == "processReturnButton") {
 
 				// For creating the size of the table
 				Statement stmt = Library.con.createStatement();
@@ -314,6 +314,8 @@ public class LibraryGUI {
 				table = new JTable(data, columnNames);
 
 			}
+			
+			
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
 			table.setAutoCreateRowSorter(true);
@@ -331,6 +333,73 @@ public class LibraryGUI {
 			e.printStackTrace();
 		}
 
+	}
+	public static void showAccountTables(ResultSet rs1, ResultSet rs2, ResultSet rs3, int bid) {
+		int numCols1;
+		int numCols2;
+		int numCols3;
+		ResultSetMetaData rsmd1;
+		ResultSetMetaData rsmd2;
+		ResultSetMetaData rsmd3;
+
+		JTextArea tableTitle1 = new JTextArea("Checked out books");
+		JTextArea tableTitle2 = new JTextArea("Outstanding fines");
+		JTextArea tableTitle3 = new JTextArea("Books on hold");
+
+		try {
+
+			rsmd1 = rs1.getMetaData();
+			
+			numCols1 = rsmd1.getColumnCount();
+
+			String columnNames1[] = new String[numCols1];
+			for (int i = 0; i < numCols1; i++) {
+				columnNames1[i] = rsmd1.getColumnName(i + 1);
+			}
+			
+			PreparedStatement ps2 = Library.con.prepareStatement("select callnumber, copyno from bookcopy where status like 'out' and callnumber in (select callnumber from borrowing where bid=?)");
+			ps2.setInt(1, bid);
+			ps2.executeQuery();
+			
+			List<String> checkedOut = new ArrayList<String>();
+			ResultSet count1 = ps2.getResultSet();
+			while (count1.next()) {
+				checkedOut.add(count1.getString("callNumber"));
+			}
+			Object data1[][] = new Object[checkedOut.size()][numCols1];
+			count1.close();
+			
+			String callNumber;
+			String copyNo;
+			int j = 0;
+			while (rs1.next()) {
+				callNumber = rs1.getString("callNumber");
+				copyNo = rs1.getString("copyNo");
+				Object tuple[] = { callNumber, copyNo };
+				data1[j] = tuple;
+				j++;
+
+			}
+			
+			rs1.close();
+			
+			JTable checkedOutTable = new JTable(data1, columnNames1);
+			checkedOutTable.setEnabled(false);
+			JScrollPane scrollPane = new JScrollPane(checkedOutTable);
+			checkedOutTable.setAutoCreateRowSorter(true);
+
+			// Display table
+			checkedOutTable.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle1.setEditable(false);
+			tablePane.add(tableTitle1);
+			tablePane.add(scrollPane);
+	
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

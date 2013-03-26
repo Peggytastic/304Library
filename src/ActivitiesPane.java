@@ -86,6 +86,13 @@ public class ActivitiesPane extends JPanel {
 			this.add(checkAccountButton);
 			this.add(placeHoldButton);
 			this.add(payFineButton);
+			
+			checkAccountButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+
+					checkAccount();
+				}
+			});
 
 		}
 
@@ -341,7 +348,6 @@ public class ActivitiesPane extends JPanel {
 
 	public void checkout() {
 		// NEED TO THROW ERROR IF CALL NUMBER DOES NOT EXIST
-		// NEED TO SET INDATE
 
 		// User inputs: bid, list of call numbers
 		JTextField bidField = new JTextField(10);
@@ -585,6 +591,62 @@ public class ActivitiesPane extends JPanel {
 
 	public void searchForBooks() {
 
+	}
+	
+	public void checkAccount(){
+
+		// User inputs: bid, password
+		JTextField bidField = new JTextField(15);
+		JTextField passwordField = new JTextField(15);
+
+		JComponent[] inputs = new JComponent[] { new JLabel("bid:"),
+				bidField,
+				new JLabel("password:"),
+				passwordField,
+
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs,
+				"Enter borrower info", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+
+		if (result == JOptionPane.OK_OPTION) {
+			int bid = Integer.parseInt(bidField.getText());
+			
+			String password = passwordField.getText();
+			
+			try {
+				PreparedStatement ps = Library.con.prepareStatement("select * from borrower where bid = ?");
+				ps.setInt(1, bid);
+				ps.executeQuery();
+				
+				ResultSet rs = ps.getResultSet();
+				rs.next();
+				
+				// Check if password is correct
+				if (!rs.getString("password").equals(password)){
+					new ErrorMessage("Incorrect password!");
+				}
+				
+				else{
+					
+					// Select items the borrower has currently borrowed and not yet returned
+					PreparedStatement ps2 = Library.con.prepareStatement("select callnumber, copyno from bookcopy where status like 'out' and callnumber in (select callnumber from borrowing where bid=?)");
+					ps2.setInt(1, bid);
+					ps2.executeQuery();
+					LibraryGUI.showAccountTables(ps2.getResultSet(), null, null, bid);
+
+				}
+				
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		}
+
+	
+		
 	}
 
 	public void addBookCopy() {
