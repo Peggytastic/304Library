@@ -718,6 +718,7 @@ public class LibraryGUI {
 		});
 	}
 
+	// For displaying the appropriate tables after each transaction
 	public static void showTable(ResultSet rs, String buttonClicked) {
 
 		int numCols;

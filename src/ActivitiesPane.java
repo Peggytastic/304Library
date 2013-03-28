@@ -165,16 +165,13 @@ public class ActivitiesPane extends JPanel {
 		expiryPanel.add(monthCombo);
 		expiryPanel.add(dayCombo);
 
-		JComponent[] inputs = new JComponent[] {
-				new JLabel("Password:"), passwordField, 
-				new JLabel("Name:"), nameField,
-				new JLabel("Address:"), addressField, 
-				new JLabel("Phone:"),phoneField, 
-				new JLabel("Email:"), emailAddressField,
+		JComponent[] inputs = new JComponent[] { new JLabel("Password:"),
+				passwordField, new JLabel("Name:"), nameField,
+				new JLabel("Address:"), addressField, new JLabel("Phone:"),
+				phoneField, new JLabel("Email:"), emailAddressField,
 				new JLabel("Sin or St No.:"), sinOrStNoField,
-				new JLabel("Type:"), typeCombo, 
-				new JLabel("Expiration date"),expiryPanel,
-		};
+				new JLabel("Type:"), typeCombo, new JLabel("Expiration date"),
+				expiryPanel, };
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrower info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -248,16 +245,13 @@ public class ActivitiesPane extends JPanel {
 		JTextField yearField = new JTextField(10);
 		JTextField subjectsField = new JTextField(100);
 
-		JComponent[] inputs = new JComponent[] {
-				new JLabel("isbn:"), isbnField, 
-				new JLabel("Title:"), titleField,
+		JComponent[] inputs = new JComponent[] { new JLabel("isbn:"),
+				isbnField, new JLabel("Title:"), titleField,
 				new JLabel("Main author:"), mainAuthorField,
 				new JLabel("Other authors:"), otherAuthorsField,
-				new JLabel("Publisher:"), publisherField, 
-				new JLabel("Year:"),yearField, 
-				new JLabel("Subjects:"), subjectsField
-		};
-		
+				new JLabel("Publisher:"), publisherField, new JLabel("Year:"),
+				yearField, new JLabel("Subjects:"), subjectsField };
+
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter book info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -270,7 +264,8 @@ public class ActivitiesPane extends JPanel {
 			String publisher = publisherField.getText();
 			int year = Integer.parseInt(yearField.getText());
 			String[] subjects = subjectsField.getText().split(",");
-			String callNumber = randomString()+" "+randomString()+" "+Integer.toString(year);
+			String callNumber = randomString() + " " + randomString() + " "
+					+ Integer.toString(year);
 			try {
 
 				// Insert new book into Book table
@@ -340,7 +335,6 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void checkout() {
-		// NEED TO THROW ERROR IF CALL NUMBER DOES NOT EXIST
 
 		// User inputs: bid, list of call numbers
 		JTextField bidField = new JTextField(10);
@@ -402,53 +396,69 @@ public class ActivitiesPane extends JPanel {
 
 				for (int i = 0; i < callNumbers.length; i++) {
 
-					// Get all copies with the matching callNumber and status
-					// being in
-					PreparedStatement ps2 = Library.con
-							.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
-					ps2.setString(1, callNumbers[i]);
+					PreparedStatement ps5 = Library.con
+							.prepareStatement("select * from book where callNumber = ?");
+					ps5.setString(1, callNumbers[i]);
+					ps5.executeQuery();
 
-					ps2.executeUpdate();
-					ResultSet rs = ps2.getResultSet();
+					// If callNumber exists in the database, proceed
+					if (ps5.getResultSet().next() == true) {
+						// Get all copies with the matching callNumber and
+						// status
+						// being 'in'
+						PreparedStatement ps2 = Library.con
+								.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
+						ps2.setString(1, callNumbers[i]);
 
-					if (rs.next() == true) {
+						ps2.executeUpdate();
+						ResultSet rs = ps2.getResultSet();
 
-						// Insert into Borrowing table if there exists a copy of
-						// the book with status "in"
-						String copyNo = rs.getString("copyNo");
-						PreparedStatement ps = Library.con
-								.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
-						ps.setInt(1, bid);
-						ps.setString(2, callNumbers[i]);
-						ps.setString(3, copyNo);
-						ps.setDate(4, outDate);
-						ps.setDate(5, inDate);
+						if (rs.next() == true) {
 
-						ps.executeUpdate();
-						Library.con.commit();
+							// Insert into Borrowing table if there exists a
+							// copy of
+							// the book with status "in"
+							String copyNo = rs.getString("copyNo");
+							PreparedStatement ps = Library.con
+									.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
+							ps.setInt(1, bid);
+							ps.setString(2, callNumbers[i]);
+							ps.setString(3, copyNo);
+							ps.setDate(4, outDate);
+							ps.setDate(5, inDate);
 
-						// Set status of checked out copy to "out"
-						PreparedStatement ps3 = Library.con
-								.prepareStatement("update bookcopy set status = ? where callNumber = ? and copyNo=?");
-						ps3.setString(1, "out");
-						ps3.setString(2, callNumbers[i]);
-						ps3.setString(3, copyNo);
+							ps.executeUpdate();
+							Library.con.commit();
 
-						ps3.executeUpdate();
-						Library.con.commit();
+							// Set status of checked out copy to "out"
+							PreparedStatement ps3 = Library.con
+									.prepareStatement("update bookcopy set status = ? where callNumber = ? and copyNo=?");
+							ps3.setString(1, "out");
+							ps3.setString(2, callNumbers[i]);
+							ps3.setString(3, copyNo);
 
-						ps.close();
-						ps2.close();
-						ps3.close();
-						rs.close();
-						rs3.close();
+							ps3.executeUpdate();
+							Library.con.commit();
 
+							ps.close();
+							ps2.close();
+							ps3.close();
+							rs.close();
+							rs3.close();
+
+						} else {
+							// Error message for if there are no copies in
+							new ErrorMessage("No copies are in for "
+									+ callNumbers[i]);
+						}
 					} else {
-						// Error message for if there are no copies in
-						new ErrorMessage("No copies are in for "
-								+ callNumbers[i]);
+						// Error message for if callNumber could not be found in
+						// the database
+						new ErrorMessage(callNumbers[i] + " does not exist!");
 					}
+					ps5.close();
 				}
+				ps4.close();
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs2 = stmt.executeQuery("SELECT * FROM Borrowing");
 				LibraryGUI.showTable(rs2, "checkoutButton");
@@ -465,11 +475,9 @@ public class ActivitiesPane extends JPanel {
 		JTextField copyNoField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
-		JComponent[] inputs = new JComponent[] {
-				new JLabel("Call number:"), callNumbersField,
-				new JLabel("Copy Number:"), copyNoField
-		};
-		
+		JComponent[] inputs = new JComponent[] { new JLabel("Call number:"),
+				callNumbersField, new JLabel("Copy Number:"), copyNoField };
+
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -650,7 +658,6 @@ public class ActivitiesPane extends JPanel {
 	}
 
 	public void addBookCopy() {
-		// NEED TO CHECK IF CALLNUMBER IS IN BOOK TABLE
 
 		// User inputs: callNumber
 		JTextField callNumberField = new JTextField(15);
@@ -666,42 +673,56 @@ public class ActivitiesPane extends JPanel {
 		if (result == JOptionPane.OK_OPTION) {
 			String callNumber = callNumberField.getText();
 			try {
-				// Get number of copies already in the database
-				PreparedStatement ps = Library.con
-						.prepareStatement("select * from bookcopy where callNumber = ?");
+				PreparedStatement ps3 = Library.con
+						.prepareStatement("select * from book where callNumber = ?");
+				ps3.setString(1, callNumber);
+				ps3.executeQuery();
 
-				ps.setString(1, callNumber);
-				ps.executeQuery();
-				ResultSet rs = ps.getResultSet();
+				// Add copy only if callNumber is in the database
+				if (ps3.getResultSet().next() == true) {
 
-				List<String> copies = new ArrayList<String>();
+					// Get number of copies already in the database
+					PreparedStatement ps = Library.con
+							.prepareStatement("select * from bookcopy where callNumber = ?");
 
-				while (rs.next()) {
-					copies.add(rs.getString("callNumber"));
+					ps.setString(1, callNumber);
+					ps.executeQuery();
+					ResultSet rs = ps.getResultSet();
+
+					List<String> copies = new ArrayList<String>();
+
+					while (rs.next()) {
+						copies.add(rs.getString("callNumber"));
+					}
+
+					// copyNo for the new copy
+					String copyNum = Integer.toString(copies.size() + 1);
+
+					// Add copy to BookCopy table
+					PreparedStatement ps2 = Library.con
+							.prepareStatement("insert into BookCopy (callNumber, copyNo, status) VALUES (?,?,?)");
+					ps2.setString(1, callNumber);
+					ps2.setString(2, copyNum);
+					ps2.setString(3, "in");
+
+					ps2.executeUpdate();
+					Library.con.commit();
+					rs.close();
+					ps.close();
+					ps2.close();
+					ps3.close();
+
+				} else {
+					// Error if callNumber could not be found in the database
+					new ErrorMessage(callNumber + " not found in the database");
 				}
-
-				// copyNo for the new copy
-				String copyNum = Integer.toString(copies.size() + 1);
-
-				// Add copy to BookCopy table
-				PreparedStatement ps2 = Library.con
-						.prepareStatement("insert into BookCopy (callNumber, copyNo, status) VALUES (?,?,?)");
-				ps2.setString(1, callNumber);
-				ps2.setString(2, copyNum);
-				ps2.setString(3, "in");
-
-				ps2.executeUpdate();
-				Library.con.commit();
-
+				
 				// Show BookCopy table
 				Statement stmt = Library.con.createStatement();
 				ResultSet rs2 = stmt.executeQuery("SELECT * FROM BookCopy");
 				LibraryGUI.showTable(rs2, "addBookCopyButton");
 
-				rs.close();
 				rs2.close();
-				ps.close();
-				ps2.close();
 
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
@@ -709,29 +730,28 @@ public class ActivitiesPane extends JPanel {
 			}
 		}
 	}
-	
+
 	// For generating call numbers
 	public static String randomString() {
-	    char nextChar;
-	    StringBuilder sb = new StringBuilder();
-	    Random rnd = new Random();
-	    String nextInt;
-	    // Length of random character string - random between 1 and 5
-	    int random = 1 + (int)(Math.random() * (5 - 1) + 1);
-	    
-	    for(int i = 0; i < random; i++) {
-	    	
-	    	int strOrNum = (int) Math.floor(Math.random()*10);
-	    	if(strOrNum > 5){
-	        nextChar = (char) (rnd.nextInt(26) + 97);
-	        sb.append(nextChar);
-	    	}
-	    	else{
-	    		nextInt = Integer.toString(rnd.nextInt(9));
-	    		sb.append(nextInt);
-	    	}       	       
-	    }
+		char nextChar;
+		StringBuilder sb = new StringBuilder();
+		Random rnd = new Random();
+		String nextInt;
+		// Length of random character string - random between 1 and 5
+		int random = 1 + (int) (Math.random() * (5 - 1) + 1);
 
-	    return sb.toString();
-	 }
+		for (int i = 0; i < random; i++) {
+
+			int strOrNum = (int) Math.floor(Math.random() * 10);
+			if (strOrNum > 5) {
+				nextChar = (char) (rnd.nextInt(26) + 97);
+				sb.append(nextChar);
+			} else {
+				nextInt = Integer.toString(rnd.nextInt(9));
+				sb.append(nextInt);
+			}
+		}
+
+		return sb.toString();
+	}
 }
