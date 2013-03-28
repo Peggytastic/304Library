@@ -904,7 +904,6 @@ public class LibraryGUI {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void showAccountTables(ResultSet rs1, ResultSet rs2,

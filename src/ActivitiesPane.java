@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -29,7 +30,6 @@ public class ActivitiesPane extends JPanel {
 	public ActivitiesPane() {
 
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
 	}
 
 	public void display(String user) {
@@ -238,9 +238,8 @@ public class ActivitiesPane extends JPanel {
 
 	public void addBook() {
 
-		// User inputs: callNumber, isbn, title, mainAuthors, otherAuthors,
+		// User inputs: isbn, title, mainAuthors, otherAuthors,
 		// publisher, year, subjects
-		JTextField callNumberField = new JTextField(15);
 		JTextField isbnField = new JTextField(10);
 		JTextField titleField = new JTextField(10);
 		JTextField mainAuthorField = new JTextField(10);
@@ -250,7 +249,6 @@ public class ActivitiesPane extends JPanel {
 		JTextField subjectsField = new JTextField(100);
 
 		JComponent[] inputs = new JComponent[] {
-				new JLabel("Call number:"), callNumberField, 
 				new JLabel("isbn:"), isbnField, 
 				new JLabel("Title:"), titleField,
 				new JLabel("Main author:"), mainAuthorField,
@@ -265,7 +263,6 @@ public class ActivitiesPane extends JPanel {
 				JOptionPane.WARNING_MESSAGE);
 
 		if (result == JOptionPane.OK_OPTION) {
-			String callNumber = callNumberField.getText();
 			String isbn = isbnField.getText();
 			String title = titleField.getText();
 			String mainAuthor = mainAuthorField.getText();
@@ -273,7 +270,7 @@ public class ActivitiesPane extends JPanel {
 			String publisher = publisherField.getText();
 			int year = Integer.parseInt(yearField.getText());
 			String[] subjects = subjectsField.getText().split(",");
-
+			String callNumber = randomString()+" "+randomString()+" "+Integer.toString(year);
 			try {
 
 				// Insert new book into Book table
@@ -712,4 +709,29 @@ public class ActivitiesPane extends JPanel {
 			}
 		}
 	}
+	
+	// For generating call numbers
+	public static String randomString() {
+	    char nextChar;
+	    StringBuilder sb = new StringBuilder();
+	    Random rnd = new Random();
+	    String nextInt;
+	    // Length of random character string - random between 1 and 5
+	    int random = 1 + (int)(Math.random() * (5 - 1) + 1);
+	    
+	    for(int i = 0; i < random; i++) {
+	    	
+	    	int strOrNum = (int) Math.floor(Math.random()*10);
+	    	if(strOrNum > 5){
+	        nextChar = (char) (rnd.nextInt(26) + 97);
+	        sb.append(nextChar);
+	    	}
+	    	else{
+	    		nextInt = Integer.toString(rnd.nextInt(9));
+	    		sb.append(nextInt);
+	    	}       	       
+	    }
+
+	    return sb.toString();
+	 }
 }
