@@ -883,6 +883,46 @@ public class LibraryGUI {
 				tableTitle = new JTextArea("Borrowing table");
 				table = new JTable(data, columnNames);
 			}
+			
+			
+			if (buttonClicked == "holdRequestButton"){
+					
+					Statement stmt = Library.con.createStatement();
+					ResultSet count = stmt
+							.executeQuery("SELECT * FROM HoldRequest");
+					List<Integer> holds = new ArrayList<Integer>();
+					while (count.next()) {
+						holds.add(count.getInt("hid"));
+					}
+					
+					Object data[][] = new Object[holds.size()][numCols];
+					count.close();
+
+					int hid;
+					int bid;
+					String callNumber;
+					Date issuedDate;
+
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						hid = rs.getInt("hid");
+						bid = rs.getInt("bid");
+						callNumber = rs.getString("callNumber");
+						issuedDate = rs.getDate("issuedDate");
+						
+						Object tuple[] = { hid, bid, callNumber, issuedDate };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					tableTitle = new JTextArea("HoldRequest table");
+					table = new JTable(data, columnNames);
+					
+				
+			}
 
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
