@@ -1430,8 +1430,6 @@ public class LibraryGUI {
 			tablePane.add(tableTitle3);
 			tablePane.add(scrollPane3);
 			
-			JScrollPane tableScrollPane = new JScrollPane(tablePane);
-			frame.add(tableScrollPane);
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
