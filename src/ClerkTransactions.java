@@ -1,8 +1,4 @@
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,27 +7,20 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
-import java.util.Random;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 public class ClerkTransactions {
 
 	/*************************************************************************************
-	*   CLERK TRANSACTIONS:
-	*   	- add borrowers, checkout items, process returns, check overdue items(TODO)
-	*************************************************************************************/
+	 * CLERK TRANSACTIONS: - add borrowers, checkout items, process returns,
+	 * check overdue items(TODO)
+	 *************************************************************************************/
 	public void addBorrower() {
 
 		// User inputs: password, name, address, phone, email, sin/st, type,
@@ -73,17 +62,14 @@ public class ClerkTransactions {
 		expiryPanel.add(monthCombo);
 		expiryPanel.add(dayCombo);
 
-		JComponent[] inputs = new JComponent[] { 
-				new JLabel("Password:"), passwordField, 
-				new JLabel("Name:"), nameField,
-				new JLabel("Address:"), addressField, 
-				new JLabel("Phone:"), phoneField, 
-				new JLabel("Email:"), emailAddressField,
+		JComponent[] inputs = new JComponent[] { new JLabel("Password:"),
+				passwordField, new JLabel("Name:"), nameField,
+				new JLabel("Address:"), addressField, new JLabel("Phone:"),
+				phoneField, new JLabel("Email:"), emailAddressField,
 				new JLabel("Sin or St No.:"), sinOrStNoField,
-				new JLabel("Type:"), typeCombo, 
-				new JLabel("Expiration date"), expiryPanel, 
-				};
-		
+				new JLabel("Type:"), typeCombo, new JLabel("Expiration date"),
+				expiryPanel, };
+
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrower info", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
@@ -151,10 +137,8 @@ public class ClerkTransactions {
 		JTextField bidField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
-		JComponent[] inputs = new JComponent[] { 
-				new JLabel("bid:"), bidField,
-				new JLabel("Call number:"), callNumbersField, 
-				};
+		JComponent[] inputs = new JComponent[] { new JLabel("bid:"), bidField,
+				new JLabel("Call number:"), callNumbersField, };
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
@@ -287,10 +271,8 @@ public class ClerkTransactions {
 		JTextField copyNoField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
-		JComponent[] inputs = new JComponent[] { 
-				new JLabel("Call number:"), callNumbersField, 
-				new JLabel("Copy Number:"), copyNoField 
-				};
+		JComponent[] inputs = new JComponent[] { new JLabel("Call number:"),
+				callNumbersField, new JLabel("Copy Number:"), copyNoField };
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
