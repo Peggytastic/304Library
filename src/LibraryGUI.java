@@ -1056,6 +1056,99 @@ public class LibraryGUI {
 		}
 	}
 
+	public static void showReportsTable(ResultSet rs, String reportsQuery, String subject) {
+		int numCols;
+		ResultSetMetaData rsmd;
+		JTextArea tableTitle = null;
+		JTable table = null;
+
+		try {
+			rsmd = rs.getMetaData();
+			numCols = rsmd.getColumnCount() + 1;	
+			
+			String columnNames[] = new String[numCols];
+			for (int i = 0; i < numCols - 1; i++) {
+				columnNames[i] = rsmd.getColumnName(i + 1);
+			}
+			columnNames[numCols-1] = "OVERDUE";
+
+			// For creating the size of the table
+			PreparedStatement ps1 = Library.con
+					.prepareStatement(reportsQuery);
+
+
+			System.out.println("QUERY: " + reportsQuery);
+			if (subject.isEmpty() == false) {
+				ps1.setString(1,  subject);
+			}
+			ps1.executeQuery();
+			ResultSet count = ps1.getResultSet();
+			List<String> books = new ArrayList<String>();
+			while (count.next()) {
+				books.add(count.getString("callNumber"));
+			}
+			
+			// Get current date
+			java.util.Date currentDate = new java.util.Date();
+			
+			Object data[][] = new Object[books.size()][numCols];
+			count.close(); 
+			String callNumber;
+			int copyNo;
+			Date inDate;
+			Date outDate;
+			String overdue = "NO";
+			int j = 0;
+
+			// Fill table
+			while (rs.next()) {
+				callNumber = rs.getString("callNumber");
+				copyNo = rs.getInt("copyNo");
+				inDate = rs.getDate("inDate");
+				outDate = rs.getDate("outDate");
+
+				try {
+					if (currentDate.after(inDate)) {
+						overdue = "YES";
+					}	
+				} catch (NullPointerException e) {
+					overdue = "N/A";
+				}
+
+				Object tuple[] = { callNumber, copyNo, inDate, outDate, overdue };
+				
+				data[j] = tuple;
+				j++;
+
+			}
+			
+			rs.close();
+			tableTitle = new JTextArea("Checked out Books Report");
+			table = new JTable(data, columnNames);
+			if(data.length == 0) {
+				
+				new ErrorMessage("No books found.");
+			}
+			
+			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
+			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
+			table.setAutoCreateRowSorter(true);
+
+			// Display table
+			table.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle.setEditable(false);
+			tablePane.add(tableTitle);
+			tablePane.add(scrollPane);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public static void showSearchResultsTable(ResultSet rs, String searchQuery, List<String> inputs) {
 		int numCols;
 		ResultSetMetaData rsmd;

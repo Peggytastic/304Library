@@ -198,6 +198,68 @@ public class LibrarianTransactions {
 
 	public void generateCheckedOutBooksReport() {
 		
+		// User inputs: bid, password
+		JTextField subjectField = new JTextField(4);
+		
+		JComponent[] inputs = new JComponent[] { 
+				new JLabel("Subject"), subjectField,
+
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs,
+				"Checked out Books Report", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		
+		String subject = subjectField.getText();
+		
+		String query = "";
+		
+		String reportsQuery = "SELECT BookCopy.callNumber, BookCopy.copyNo, Borrowing.inDate, Borrowing.outDate " +
+								"FROM BookCopy " +
+								"INNER JOIN Borrowing on BookCopy.copyNo = Borrowing.copyNo and BookCopy.callNumber = Borrowing.callNumber " +
+								"WHERE BookCopy.status = 'out' ";
+		
+		if (result == JOptionPane.OK_OPTION) {
+			
+			try {
+
+				ResultSet rs = null;
+				
+				if (subject.isEmpty() == true) {
+					
+					query = reportsQuery;
+					System.out.println(query);
+					
+					PreparedStatement ps = Library.con
+							.prepareStatement(query);
+					ps.executeQuery();
+
+					rs = ps.getResultSet();
+				}
+				else {
+					query = "SELECT BookCopy.callNumber, BookCopy.copyNo, Borrowing.inDate, Borrowing.outDate " +
+							"FROM BookCopy " + 
+							"INNER JOIN Borrowing ON BookCopy.copyNo = Borrowing.copyNo and BookCopy.callNumber = Borrowing.callNumber " +
+							"INNER JOIN HasSubject ON BookCopy.callNumber = Borrowing.callNumber and BookCopy.callNumber = HasSubject.callNumber " +
+							"WHERE HasSubject.subject = ? and BookCopy.status = 'out' ";
+
+					System.out.println(query);
+					PreparedStatement ps2 = Library.con
+							.prepareStatement(query);
+					ps2.setString(1, subject);
+					ps2.executeQuery();
+
+					rs = ps2.getResultSet();
+				}
+			
+			LibraryGUI.showReportsTable(rs, query, subject);
+			}
+			catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		
 	}
 	
 	public void generatePopularBooksReport() {
@@ -214,6 +276,33 @@ public class LibrarianTransactions {
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Popular Books Report", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
+		
+		int year = Integer.parseInt(yearField.getText());
+		int noBooks = Integer.parseInt(numberField.getText());
+		
+		String reportsQuery = "SELECT Borrowing.callNumber, count(borid) AS timesBorrowed " +
+								"FROM Borrowing " +
+								"WHERE outDate = ?" +
+								"GROUP BY Borrowing.callNumber";
+		
+		if (result == JOptionPane.OK_OPTION) {
+			
+			try {
+			PreparedStatement ps = Library.con
+					.prepareStatement(reportsQuery);
+			ps.setInt(1, year);
+			ps.executeQuery();
+			
+			ResultSet rs = ps.getResultSet();			
+			
+			LibraryGUI.showReportsTable(rs, reportsQuery, null);
+			}
+			catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
 		
 	}
 	
