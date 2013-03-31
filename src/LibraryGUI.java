@@ -1129,7 +1129,10 @@ public class LibraryGUI {
 			rs.close();
 			tableTitle = new JTextArea("Search Results");
 			table = new JTable(data, columnNames);
-
+			if(data.length == 0) {
+				
+				new ErrorMessage("No books found.");
+			}
 			table.setEnabled(false);
 			table.setPreferredSize(new Dimension(600, 400));
 			JScrollPane scrollPane = new JScrollPane(table);
