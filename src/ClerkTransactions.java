@@ -7,7 +7,10 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -19,7 +22,7 @@ public class ClerkTransactions {
 
 	/*************************************************************************************
 	 * CLERK TRANSACTIONS: - add borrowers, checkout items, process returns,
-	 * check overdue items(TODO)
+	 * check overdue items
 	 *************************************************************************************/
 	public void addBorrower() {
 
@@ -353,7 +356,8 @@ public class ClerkTransactions {
 								.prepareStatement("update BookCopy Set status = 'on-hold' where callNumber = ? and copyNo = ?");
 						ps4.setString(1, callNumbers);
 						ps4.setString(2, copyNo);
-						ps4.execute();
+						ps4.executeUpdate();
+						Library.con.commit();
 					}
 					// If no hold request then change the status to in
 					else {
@@ -361,7 +365,7 @@ public class ClerkTransactions {
 								.prepareStatement("update BookCopy Set status = 'in' where callNumber = ? and copyNo = ?");
 						ps4.setString(1, callNumbers);
 						ps4.setString(2, copyNo);
-						ps4.execute();
+						ps4.executeUpdate();
 						Library.con.commit();
 					}
 					Library.con.commit();
@@ -384,6 +388,34 @@ public class ClerkTransactions {
 	}
 
 	public void checkOverdueItems() {
-		System.out.println("Checking overdue items");
+
+			try {
+				
+				// Get current date
+				java.util.Date currentDate = new java.util.Date();
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				Date curDate = null;
+				try {
+					curDate = new Date(dateFormat.parse(
+							dateFormat.format(currentDate)).getTime());
+				} catch (ParseException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				
+				// Get list of overdue items (curDate > inDate and status being out)
+				PreparedStatement ps = Library.con
+						.prepareStatement("select borid, bid, callNumber, copyNo, inDate from borrowing where callNumber in (select callNumber from bookCopy where bookCopy.callNumber = borrowing.callNumber and bookCopy.copyNo = borrowing.copyNo and status like 'out') and inDate < ?");
+				ps.setDate(1, curDate);
+				ps.executeQuery();
+
+				LibraryGUI.showTable(ps.getResultSet(), "checkOverdueItems");
+
+
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
 	}
 }

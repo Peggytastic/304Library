@@ -10,6 +10,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -919,11 +922,62 @@ public class LibraryGUI {
 					}
 
 					tableTitle = new JTextArea("HoldRequest table");
-					table = new JTable(data, columnNames);
-					
-				
+					table = new JTable(data, columnNames);	
 			}
 
+			if (buttonClicked == "checkOverdueItems"){
+				
+				java.util.Date currentDate = new java.util.Date();
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				Date curDate = null;
+				try {
+					curDate = new Date(dateFormat.parse(
+							dateFormat.format(currentDate)).getTime());
+				} catch (ParseException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				
+				PreparedStatement ps = Library.con
+						.prepareStatement("select borid, bid, callNumber, copyNo from borrowing where callNumber in (select callNumber from bookCopy where bookCopy.callNumber = borrowing.callNumber and bookCopy.copyNo = borrowing.copyNo and status like 'out') and inDate < ?");
+				ps.setDate(1, curDate);
+				ps.executeQuery();
+
+				ResultSet count = ps.getResultSet();
+				List<Integer> overdues = new ArrayList<Integer>();
+				while (count.next()) {
+					overdues.add(count.getInt("borid"));
+				}
+				
+				Object data[][] = new Object[overdues.size()][numCols];
+				count.close();
+
+				int borid;
+				int bid;
+				String callNumber;
+				String copyNo;
+				Date inDate;
+
+				int j = 0;
+
+				// Fill table
+				while (rs.next()) {
+					borid = rs.getInt("borid");
+					bid = rs.getInt("bid");
+					callNumber = rs.getString("callNumber");
+					copyNo = rs.getString("copyNo");
+					inDate = rs.getDate("inDate");
+					
+					Object tuple[] = {borid, bid, callNumber, copyNo, inDate};
+					data[j] = tuple;
+					
+					j++;
+				}
+
+				tableTitle = new JTextArea("Overdue items");
+				table = new JTable(data, columnNames);	
+		}
+			
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
 			table.setAutoCreateRowSorter(true);
