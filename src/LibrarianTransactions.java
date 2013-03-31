@@ -202,6 +202,19 @@ public class LibrarianTransactions {
 	
 	public void generatePopularBooksReport() {
 		
+		// User inputs: bid, password
+		JTextField yearField = new JTextField(4);
+		JTextField numberField = new JTextField(3);
+
+		JComponent[] inputs = new JComponent[] { 
+				new JLabel("Book year:"), yearField,
+				new JLabel("No. of books:"), numberField,
+
+		};
+		int result = JOptionPane.showConfirmDialog(null, inputs,
+				"Popular Books Report", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE);
+		
 	}
 	
 	// For generating call numbers

@@ -82,10 +82,6 @@ public class BorrowerTransactions {
 			ps.executeQuery();
 
 			ResultSet rs = ps.getResultSet();
-			if(!rs.next()) {
-				
-				new ErrorMessage("No books found.");
-			}
 			
 			// Show tables
 			LibraryGUI.showSearchResultsTable(rs, query, setInputs);
