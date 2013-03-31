@@ -1,23 +1,22 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.*;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 
 public class LibraryGUI {
 	// The main frame for the GUI
@@ -47,7 +46,8 @@ public class LibraryGUI {
 		// Panel for viewing the tables
 		tablePane = new TablePane();
 		tablePane.setBorder(BorderFactory.createLineBorder(Color.black));
-
+		tablePane.setLayout(new BoxLayout(tablePane, BoxLayout.PAGE_AXIS));
+		
 		// Panel for displaying types of users
 		userPane = new JPanel();
 		userPane.setLayout(new BoxLayout(userPane, BoxLayout.Y_AXIS));
@@ -157,6 +157,7 @@ public class LibraryGUI {
 						sinOrStNo = rs.getInt("sinOrStNo");
 						type = rs.getString("type");
 						expiryDate = rs.getString("expiryDate");
+					
 						
 						Object tuple[] = { bid, password, name, address, phone,
 								emailAddress, sinOrStNo, type, expiryDate };
@@ -168,7 +169,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -241,9 +244,11 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("Book");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
-
+					
 					// Display table
 					table.setFillsViewportHeight(true);
 					tablePane.removeAll();
@@ -305,7 +310,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("HasAuthor");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -370,7 +377,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("HasSubject");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -437,7 +446,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("BookCopy");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -506,7 +517,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("HoldRequest");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -579,7 +592,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("Borrowing");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -649,7 +664,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("Fine");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -888,9 +905,141 @@ public class LibraryGUI {
 				tableTitle = new JTextArea("Borrowing table");
 				table = new JTable(data, columnNames);
 			}
+			
+			
+			if (buttonClicked == "holdRequestButton"){
+					
+					Statement stmt = Library.con.createStatement();
+					ResultSet count = stmt
+							.executeQuery("SELECT * FROM HoldRequest");
+					List<Integer> holds = new ArrayList<Integer>();
+					while (count.next()) {
+						holds.add(count.getInt("hid"));
+					}
+					
+					Object data[][] = new Object[holds.size()][numCols];
+					count.close();
+
+					int hid;
+					int bid;
+					String callNumber;
+					Date issuedDate;
+
+					int j = 0;
+
+					// Fill table
+					while (rs.next()) {
+						hid = rs.getInt("hid");
+						bid = rs.getInt("bid");
+						callNumber = rs.getString("callNumber");
+						issuedDate = rs.getDate("issuedDate");
+						
+						Object tuple[] = { hid, bid, callNumber, issuedDate };
+						data[j] = tuple;
+						
+						j++;
+					}
+
+					tableTitle = new JTextArea("HoldRequest table");
+					table = new JTable(data, columnNames);	
+			}
+
+			if (buttonClicked == "checkOverdueItems"){
+				
+				java.util.Date currentDate = new java.util.Date();
+				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				Date curDate = null;
+				try {
+					curDate = new Date(dateFormat.parse(
+							dateFormat.format(currentDate)).getTime());
+				} catch (ParseException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+				
+				PreparedStatement ps = Library.con
+						.prepareStatement("select borid, bid, callNumber, copyNo from borrowing where callNumber in (select callNumber from bookCopy where bookCopy.callNumber = borrowing.callNumber and bookCopy.copyNo = borrowing.copyNo and status like 'out') and inDate < ?");
+				ps.setDate(1, curDate);
+				ps.executeQuery();
+
+				ResultSet count = ps.getResultSet();
+				List<Integer> overdues = new ArrayList<Integer>();
+				while (count.next()) {
+					overdues.add(count.getInt("borid"));
+				}
+				
+				Object data[][] = new Object[overdues.size()][numCols];
+				count.close();
+
+				int borid;
+				int bid;
+				String callNumber;
+				String copyNo;
+				Date inDate;
+
+				int j = 0;
+
+				// Fill table
+				while (rs.next()) {
+					borid = rs.getInt("borid");
+					bid = rs.getInt("bid");
+					callNumber = rs.getString("callNumber");
+					copyNo = rs.getString("copyNo");
+					inDate = rs.getDate("inDate");
+					
+					Object tuple[] = {borid, bid, callNumber, copyNo, inDate};
+					data[j] = tuple;
+					
+					j++;
+				}
+
+				tableTitle = new JTextArea("Overdue items");
+				table = new JTable(data, columnNames);	
+		}
+			if (buttonClicked == "payFineButton") {
+
+				// For creating the size of the table
+				Statement stmt = Library.con.createStatement();
+				ResultSet count = stmt.executeQuery("SELECT * FROM Fine");
+				List<Integer> fines = new ArrayList<Integer>();
+				while (count.next()) {
+					fines.add(count.getInt("fid"));
+				}
+				
+				Object data[][] = new Object[fines.size()][numCols];
+				count.close();
+
+				int fid;
+				String amount;
+				Date issuedDate;
+				Date paidDate;
+				int borid;
+
+				int j = 0;
+
+				// Fill table
+				while (rs.next()) {
+					fid = rs.getInt("fid");
+					amount = rs.getString("amount");
+					issuedDate = rs.getDate("issuedDate");
+					paidDate = rs.getDate("paidDate");
+					borid = rs.getInt("borid");
+
+					Object tuple[] = { fid, amount, issuedDate, paidDate,
+							borid };
+					data[j] = tuple;
+
+					j++;
+				}
+				
+				tableTitle = new JTextArea("Fines");
+				table = new JTable(data, columnNames);
+			}
 
 			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
 			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
 			table.setAutoCreateRowSorter(true);
 
 			// Display table
@@ -907,6 +1056,196 @@ public class LibraryGUI {
 		}
 	}
 
+	public static void showReportsTable(ResultSet rs, String reportsQuery, String subject) {
+		int numCols;
+		ResultSetMetaData rsmd;
+		JTextArea tableTitle = null;
+		JTable table = null;
+
+		try {
+			rsmd = rs.getMetaData();
+			numCols = rsmd.getColumnCount() + 1;	
+			
+			String columnNames[] = new String[numCols];
+			for (int i = 0; i < numCols - 1; i++) {
+				columnNames[i] = rsmd.getColumnName(i + 1);
+			}
+			columnNames[numCols-1] = "OVERDUE";
+
+			// For creating the size of the table
+			PreparedStatement ps1 = Library.con
+					.prepareStatement(reportsQuery);
+
+
+			System.out.println("QUERY: " + reportsQuery);
+			if (subject.isEmpty() == false) {
+				ps1.setString(1,  subject);
+			}
+			ps1.executeQuery();
+			ResultSet count = ps1.getResultSet();
+			List<String> books = new ArrayList<String>();
+			while (count.next()) {
+				books.add(count.getString("callNumber"));
+			}
+			
+			// Get current date
+			java.util.Date currentDate = new java.util.Date();
+			
+			Object data[][] = new Object[books.size()][numCols];
+			count.close(); 
+			String callNumber;
+			int copyNo;
+			Date inDate;
+			Date outDate;
+			String overdue = "NO";
+			int j = 0;
+
+			// Fill table
+			while (rs.next()) {
+				callNumber = rs.getString("callNumber");
+				copyNo = rs.getInt("copyNo");
+				inDate = rs.getDate("inDate");
+				outDate = rs.getDate("outDate");
+
+				try {
+					if (currentDate.after(inDate)) {
+						overdue = "YES";
+					}	
+				} catch (NullPointerException e) {
+					overdue = "N/A";
+				}
+
+				Object tuple[] = { callNumber, copyNo, inDate, outDate, overdue };
+				
+				data[j] = tuple;
+				j++;
+
+			}
+			
+			rs.close();
+			tableTitle = new JTextArea("Checked out Books Report");
+			table = new JTable(data, columnNames);
+			if(data.length == 0) {
+				
+				new ErrorMessage("No books found.");
+			}
+			
+			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
+			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
+			table.setAutoCreateRowSorter(true);
+
+			// Display table
+			table.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle.setEditable(false);
+			tablePane.add(tableTitle);
+			tablePane.add(scrollPane);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public static void showSearchResultsTable(ResultSet rs, String searchQuery, List<String> inputs) {
+		int numCols;
+		ResultSetMetaData rsmd;
+		JTextArea tableTitle = null;
+		JTable table = null;
+
+		try {
+			rsmd = rs.getMetaData();
+			numCols = rsmd.getColumnCount() + 1;
+
+			String columnNames[] = new String[numCols];
+			for (int i = 0; i < numCols-1; i++) {
+				columnNames[i] = rsmd.getColumnName(i + 1);
+			}
+			columnNames[numCols-1] = "COPIES AVAILABLE";
+
+			// For creating the size of the table
+			PreparedStatement ps1 = Library.con
+					.prepareStatement(searchQuery);
+			for (int i = 0; i < inputs.size(); i++) {
+				ps1.setString(i+1, inputs.get(i));
+			}
+
+			System.out.println("QUERY: " + searchQuery);
+			ps1.executeQuery();
+			ResultSet count = ps1.getResultSet();
+			List<String> books = new ArrayList<String>();
+			while (count.next()) {
+				books.add(count.getString("callNumber"));
+			}
+			Object data[][] = new Object[books.size()][numCols];
+			count.close();
+
+			String callNumber;
+			String isbn;
+			String title;
+			String mainAuthor;
+			String publisher;
+			int copiesAvailable = 0;
+			int year;
+			int j = 0;
+
+			// Fill table
+			while (rs.next()) {
+				callNumber = rs.getString("callNumber");
+				isbn = rs.getString("isbn");
+				title = rs.getString("title");
+				mainAuthor = rs.getString("mainAuthor");
+				publisher = rs.getString("publisher");
+				year = rs.getInt("year");
+				
+				// Check the number of available copies for a book
+				PreparedStatement ps2 = Library.con
+						.prepareStatement("SELECT count(*) from BookCopy WHERE callNumber = ? and status LIKE 'in'");
+				ps2.setString(1, callNumber);
+				ps2.executeQuery();
+				
+				ResultSet rs2 = ps2.getResultSet();
+				if(rs2.next()) {
+					copiesAvailable = rs2.getInt(1);
+				}
+
+				Object tuple[] = { callNumber, isbn, title, mainAuthor,
+						publisher, year, copiesAvailable };
+				
+				data[j] = tuple;
+				j++;
+
+			}
+			
+			rs.close();
+			tableTitle = new JTextArea("Search Results");
+			table = new JTable(data, columnNames);
+			if(data.length == 0) {
+				
+				new ErrorMessage("No books found.");
+			}
+			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
+			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
+			table.setAutoCreateRowSorter(true);
+
+			// Display table
+			table.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle.setEditable(false);
+			tablePane.add(tableTitle);
+			tablePane.add(scrollPane);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public static void showAccountTables(ResultSet rs1, ResultSet rs2,
 			ResultSet rs3, int bid) {
 		// Tables won't set size properly!!!
@@ -1043,8 +1382,9 @@ public class LibraryGUI {
 				isbn = rs3.getString("isbn");
 				callNumber2 = rs3.getString("callNumber");
 				title = rs3.getString("title");
+				
 				Object tuple[] = { hid, issuedDate2, isbn, callNumber2, title };
-				data2[j] = tuple;
+				data3[j] = tuple;
 				j++;
 
 			}
@@ -1055,17 +1395,23 @@ public class LibraryGUI {
 			// View tables
 			JTable checkedOutTable = new JTable(data1, columnNames1);
 			checkedOutTable.setEnabled(false);
+			checkedOutTable.setPreferredSize(new Dimension(600, 200));
 			JScrollPane scrollPane1 = new JScrollPane(checkedOutTable);
+			scrollPane1.setPreferredSize(new Dimension(600, 200));
 			checkedOutTable.setAutoCreateRowSorter(true);
 
 			JTable fineTable = new JTable(data2, columnNames2);
 			fineTable.setEnabled(false);
+			fineTable.setPreferredSize(new Dimension(600, 200));
 			JScrollPane scrollPane2 = new JScrollPane(fineTable);
+			scrollPane2.setPreferredSize(new Dimension(600, 200));
 			fineTable.setAutoCreateRowSorter(true);
 
 			JTable holdsTable = new JTable(data3, columnNames3);
 			holdsTable.setEnabled(false);
+			holdsTable.setPreferredSize(new Dimension(600, 200));
 			JScrollPane scrollPane3 = new JScrollPane(holdsTable);
+			scrollPane3.setPreferredSize(new Dimension(600, 200));
 			holdsTable.setAutoCreateRowSorter(true);
 
 			fineTable.setFillsViewportHeight(true);
@@ -1083,6 +1429,9 @@ public class LibraryGUI {
 			tableTitle3.setEditable(false);
 			tablePane.add(tableTitle3);
 			tablePane.add(scrollPane3);
+			
+			JScrollPane tableScrollPane = new JScrollPane(tablePane);
+			frame.add(tableScrollPane);
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
