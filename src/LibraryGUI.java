@@ -157,6 +157,7 @@ public class LibraryGUI {
 						sinOrStNo = rs.getInt("sinOrStNo");
 						type = rs.getString("type");
 						expiryDate = rs.getString("expiryDate");
+					
 						
 						Object tuple[] = { bid, password, name, address, phone,
 								emailAddress, sinOrStNo, type, expiryDate };
@@ -1034,7 +1035,7 @@ public class LibraryGUI {
 				tableTitle = new JTextArea("Fines");
 				table = new JTable(data, columnNames);
 			}
-			
+
 			table.setEnabled(false);
 			table.setPreferredSize(new Dimension(600, 400));
 			JScrollPane scrollPane = new JScrollPane(table);
@@ -1055,6 +1056,100 @@ public class LibraryGUI {
 		}
 	}
 
+	public static void showSearchResultsTable(ResultSet rs, String searchQuery, List<String> inputs) {
+		int numCols;
+		ResultSetMetaData rsmd;
+		JTextArea tableTitle = null;
+		JTable table = null;
+
+		try {
+			rsmd = rs.getMetaData();
+			numCols = rsmd.getColumnCount() + 1;
+
+			String columnNames[] = new String[numCols];
+			for (int i = 0; i < numCols-1; i++) {
+				columnNames[i] = rsmd.getColumnName(i + 1);
+			}
+			columnNames[numCols-1] = "COPIES AVAILABLE";
+
+			// For creating the size of the table
+			PreparedStatement ps1 = Library.con
+					.prepareStatement(searchQuery);
+			for (int i = 0; i < inputs.size(); i++) {
+				ps1.setString(i+1, inputs.get(i));
+			}
+
+			System.out.println("QUERY: " + searchQuery);
+			ps1.executeQuery();
+			ResultSet count = ps1.getResultSet();
+			List<String> books = new ArrayList<String>();
+			while (count.next()) {
+				books.add(count.getString("callNumber"));
+			}
+			Object data[][] = new Object[books.size()][numCols];
+			count.close();
+
+			String callNumber;
+			String isbn;
+			String title;
+			String mainAuthor;
+			String publisher;
+			int copiesAvailable = 0;
+			int year;
+			int j = 0;
+
+			// Fill table
+			while (rs.next()) {
+				callNumber = rs.getString("callNumber");
+				isbn = rs.getString("isbn");
+				title = rs.getString("title");
+				mainAuthor = rs.getString("mainAuthor");
+				publisher = rs.getString("publisher");
+				year = rs.getInt("year");
+				
+				// Check the number of available copies for a book
+				PreparedStatement ps2 = Library.con
+						.prepareStatement("SELECT count(*) from BookCopy WHERE callNumber = ? and status LIKE 'in'");
+				ps2.setString(1, callNumber);
+				ps2.executeQuery();
+				
+				ResultSet rs2 = ps2.getResultSet();
+				if(rs2.next()) {
+					copiesAvailable = rs2.getInt(1);
+				}
+
+				Object tuple[] = { callNumber, isbn, title, mainAuthor,
+						publisher, year, copiesAvailable };
+				
+				data[j] = tuple;
+				j++;
+
+			}
+			
+			rs.close();
+			tableTitle = new JTextArea("Search Results");
+			table = new JTable(data, columnNames);
+
+			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
+			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
+			table.setAutoCreateRowSorter(true);
+
+			// Display table
+			table.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle.setEditable(false);
+			tablePane.add(tableTitle);
+			tablePane.add(scrollPane);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public static void showAccountTables(ResultSet rs1, ResultSet rs2,
 			ResultSet rs3, int bid) {
 		// Tables won't set size properly!!!

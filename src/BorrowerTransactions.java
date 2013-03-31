@@ -23,15 +23,81 @@ public class BorrowerTransactions {
 		// User inputs: title, author
 		JTextField titleField = new JTextField(30);
 		JTextField authorField = new JTextField(30);
+		JTextField subjectField = new JTextField(30);
 
 		JComponent[] inputs = new JComponent[] { 
 				new JLabel("Title:"), titleField,
-				new JLabel("Author:"), authorField, };
+				new JLabel("Author:"), authorField,
+				new JLabel ("Subject:"), subjectField
+				};
 
 		Object[] options = { "Search", "Cancel" };
-		int result = JOptionPane.showOptionDialog(null, inputs, "Book Search",
+		JOptionPane.showOptionDialog(null, inputs, "Book Search",
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
 				null, options, options[0]);
+		
+		String title = titleField.getText();
+		String author = authorField.getText();
+		String subject = subjectField.getText();
+		
+		String query = "";
+		java.util.List<String> setInputs = new java.util.ArrayList<String>();
+
+		if (title.isEmpty() == false) { 
+			query += "SELECT callNumber, title, mainAuthor, publisher, year, isbn " +
+						"FROM Book " +
+						"WHERE title = ? ";
+			setInputs.add(title);
+		}
+		if (author.isEmpty() == false) {
+			if(query.isEmpty() == false) {
+				query += "UNION";
+			}
+			query += "SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
+						"FROM Book, HasAuthor " +
+						"WHERE Book.callNumber = HasAuthor.callNumber and HasAuthor.name = ? ";
+			setInputs.add(author);
+		}
+		if (subject.isEmpty() == false) {
+			if(query.isEmpty() == false) {
+				query += "UNION";
+			}
+			query += "SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
+						"FROM Book, HasSubject " +
+						"WHERE Book.callNumber=HasSubject.callNumber and HasSubject.subject = ? ";
+			setInputs.add(subject);
+		}
+		
+		// Show all books if all search fields are empty
+		if (title.isEmpty() == true && author.isEmpty() == true && subject.isEmpty() == true) {
+			query = "SELECT * from Book";
+		}
+		
+		try {
+			PreparedStatement ps = Library.con
+					.prepareStatement(query);
+			for (int i = 0; i < setInputs.size(); i++) {
+				ps.setString(i+1, setInputs.get(i));
+			}
+			ps.executeQuery();
+
+			ResultSet rs = ps.getResultSet();
+			if(!rs.next()) {
+				
+				new ErrorMessage("No books found.");
+			}
+			
+			// Show tables
+			LibraryGUI.showSearchResultsTable(rs, query, setInputs);
+			ps.close();
+				
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+				
 
 	}
 
@@ -220,7 +286,7 @@ public class BorrowerTransactions {
 	
 	public void payFine() {
 		System.out.println("Paying fines");
-		// User inputs: bid, password
+		// User inputs: bid, fid, amount to pay
 				JTextField bidField = new JTextField(15);
 				JTextField fineField = new JTextField(15);
 				JTextField amountField = new JTextField(15);
@@ -239,8 +305,16 @@ public class BorrowerTransactions {
 					int bid = Integer.parseInt(bidField.getText());
 					int fid = Integer.parseInt(fineField.getText());
 					float amount = Float.parseFloat(amountField.getText());
-
-
+					
+					java.util.Date currentDate = new java.util.Date();
+					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					Date paidDate = null;
+					try {
+						paidDate = new Date(dateFormat.parse(dateFormat.format(currentDate)).getTime());
+					} catch (ParseException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					try {
 						PreparedStatement ps = Library.con
 								.prepareStatement("SELECT * FROM fine WHERE borid = ? and fid = ?");
@@ -259,9 +333,11 @@ public class BorrowerTransactions {
 							}
 
 							PreparedStatement ps2 = Library.con
-									.prepareStatement("UPDATE Fine Set amount = ? WHERE fid = ?");
+									.prepareStatement("UPDATE Fine Set amount = ?, paidDate = ? WHERE fid = ?");
 							ps2.setFloat(1, remainingFine);
-							ps2.setInt(2, fid);
+							ps2.setDate(2, paidDate);
+							ps2.setInt(3, fid);
+
 							ps2.executeUpdate();
 							Library.con.commit();
 							
@@ -270,6 +346,7 @@ public class BorrowerTransactions {
 							msg += "Thank you.</html>";
 							new ErrorMessage(msg);
 							
+							ps2.close();
 						}
 
 
@@ -277,6 +354,8 @@ public class BorrowerTransactions {
 						Statement stmt = Library.con.createStatement();
 						ResultSet rs2 = stmt.executeQuery("SELECT * FROM Fine");
 						LibraryGUI.showTable(rs2, "payFineButton");
+						
+						ps.close();
 						
 
 					} catch (SQLException e) {
