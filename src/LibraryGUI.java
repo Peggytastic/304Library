@@ -1,6 +1,5 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -242,7 +241,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("Book");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -308,7 +307,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("HasAuthor");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -375,7 +374,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("HasSubject");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -444,7 +443,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("BookCopy");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -515,7 +514,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("HoldRequest");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -590,7 +589,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("Borrowing");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -662,7 +661,7 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrower");
+					JTextArea tableTitle = new JTextArea("Fine");
 					table.setEnabled(false);
 					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
@@ -1429,9 +1428,7 @@ public class LibraryGUI {
 			tableTitle3.setEditable(false);
 			tablePane.add(tableTitle3);
 			tablePane.add(scrollPane3);
-			
-			JScrollPane tableScrollPane = new JScrollPane(tablePane);
-			frame.add(tableScrollPane);
+
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
