@@ -168,7 +168,9 @@ public class LibraryGUI {
 					JTable table = new JTable(data, columnNames);
 					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -239,11 +241,13 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Book");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
-
+					
 					// Display table
 					table.setFillsViewportHeight(true);
 					tablePane.removeAll();
@@ -303,9 +307,11 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("HasAuthor");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -368,9 +374,11 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("HasSubject");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -435,9 +443,11 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("BookCopy");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -504,9 +514,11 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("HoldRequest");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -577,9 +589,11 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Borrowing");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -647,9 +661,11 @@ public class LibraryGUI {
 					}
 
 					JTable table = new JTable(data, columnNames);
-					JTextArea tableTitle = new JTextArea("Fine");
+					JTextArea tableTitle = new JTextArea("Borrower");
 					table.setEnabled(false);
+					table.setPreferredSize(new Dimension(600, 400));
 					JScrollPane scrollPane = new JScrollPane(table);
+					scrollPane.setPreferredSize(new Dimension(600, 400));
 					table.setAutoCreateRowSorter(true);
 
 					// Display table
@@ -1020,7 +1036,9 @@ public class LibraryGUI {
 			}
 			
 			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
 			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
 			table.setAutoCreateRowSorter(true);
 
 			// Display table
@@ -1173,8 +1191,9 @@ public class LibraryGUI {
 				isbn = rs3.getString("isbn");
 				callNumber2 = rs3.getString("callNumber");
 				title = rs3.getString("title");
+				
 				Object tuple[] = { hid, issuedDate2, isbn, callNumber2, title };
-				data2[j] = tuple;
+				data3[j] = tuple;
 				j++;
 
 			}
@@ -1185,17 +1204,23 @@ public class LibraryGUI {
 			// View tables
 			JTable checkedOutTable = new JTable(data1, columnNames1);
 			checkedOutTable.setEnabled(false);
+			checkedOutTable.setPreferredSize(new Dimension(600, 200));
 			JScrollPane scrollPane1 = new JScrollPane(checkedOutTable);
+			scrollPane1.setPreferredSize(new Dimension(600, 200));
 			checkedOutTable.setAutoCreateRowSorter(true);
 
 			JTable fineTable = new JTable(data2, columnNames2);
 			fineTable.setEnabled(false);
+			fineTable.setPreferredSize(new Dimension(600, 200));
 			JScrollPane scrollPane2 = new JScrollPane(fineTable);
+			scrollPane2.setPreferredSize(new Dimension(600, 200));
 			fineTable.setAutoCreateRowSorter(true);
 
 			JTable holdsTable = new JTable(data3, columnNames3);
 			holdsTable.setEnabled(false);
+			holdsTable.setPreferredSize(new Dimension(600, 200));
 			JScrollPane scrollPane3 = new JScrollPane(holdsTable);
+			scrollPane3.setPreferredSize(new Dimension(600, 200));
 			holdsTable.setAutoCreateRowSorter(true);
 
 			fineTable.setFillsViewportHeight(true);
