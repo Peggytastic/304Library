@@ -32,10 +32,10 @@ public class BorrowerTransactions {
 				};
 
 		Object[] options = { "Search", "Cancel" };
-		JOptionPane.showOptionDialog(null, inputs, "Book Search",
+		int buttonSelected = JOptionPane.showOptionDialog(null, inputs, "Book Search",
 				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
 				null, options, options[0]);
-		
+		if (buttonSelected == 0){
 		String title = titleField.getText();
 		String author = authorField.getText();
 		String subject = subjectField.getText();
@@ -93,7 +93,7 @@ public class BorrowerTransactions {
 			e.printStackTrace();
 		}
 		
-				
+		}		
 
 	}
 
