@@ -65,13 +65,16 @@ public class ClerkTransactions {
 		expiryPanel.add(monthCombo);
 		expiryPanel.add(dayCombo);
 
-		JComponent[] inputs = new JComponent[] { new JLabel("Password:"),
-				passwordField, new JLabel("Name:"), nameField,
-				new JLabel("Address:"), addressField, new JLabel("Phone:"),
-				phoneField, new JLabel("Email:"), emailAddressField,
+		JComponent[] inputs = new JComponent[] { 
+				new JLabel("Password:"), passwordField, 
+				new JLabel("Name:"), nameField,
+				new JLabel("Address:"), addressField, 
+				new JLabel("Phone:"),phoneField, 
+				new JLabel("Email:"), emailAddressField,
 				new JLabel("Sin or St No.:"), sinOrStNoField,
-				new JLabel("Type:"), typeCombo, new JLabel("Expiration date"),
-				expiryPanel, };
+				new JLabel("Type:"), typeCombo, 
+				new JLabel("Expiration date"), expiryPanel, 
+				};
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrower info", JOptionPane.OK_CANCEL_OPTION,
@@ -140,8 +143,10 @@ public class ClerkTransactions {
 		JTextField bidField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
-		JComponent[] inputs = new JComponent[] { new JLabel("bid:"), bidField,
-				new JLabel("Call number:"), callNumbersField, };
+		JComponent[] inputs = new JComponent[] { 
+				new JLabel("bid:"), bidField,
+				new JLabel("Call number:"), callNumbersField, 
+				};
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,
@@ -274,8 +279,10 @@ public class ClerkTransactions {
 		JTextField copyNoField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
-		JComponent[] inputs = new JComponent[] { new JLabel("Call number:"),
-				callNumbersField, new JLabel("Copy Number:"), copyNoField };
+		JComponent[] inputs = new JComponent[] { 
+				new JLabel("Call number:"), callNumbersField, 
+				new JLabel("Copy Number:"), copyNoField 
+				};
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,

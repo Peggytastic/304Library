@@ -6,8 +6,8 @@ import javax.swing.*;
 import java.awt.event.*;
 
 public class ErrorMessage extends JFrame{
-	private static final int WIDTH = 260;
-	private static final int HEIGHT = 80;
+	private static final int WIDTH = 300;
+	private static final int HEIGHT = 100;
 	private JButton exitB;
 	private JLabel errorMessage;
 	

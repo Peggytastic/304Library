@@ -74,19 +74,34 @@ public class BorrowerTransactions {
 					// Select items the borrower has currently borrowed and not
 					// yet returned
 					PreparedStatement ps2 = Library.con
-							.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate from Borrowing, BookCopy where Borrowing.callNumber=BookCopy.callNumber and Borrowing.copyNo=BookCopy.CopyNo and BookCopy.Status = 'out' and Borrowing.bid = ?");
+							.prepareStatement("select borrowing.borid, bookcopy.callNumber, bookcopy.copyNo, borrowing.outDate, borrowing.inDate " +
+												"from Borrowing, BookCopy " +
+												"where Borrowing.callNumber=BookCopy.callNumber " +
+													"and Borrowing.copyNo=BookCopy.CopyNo " +
+													"and BookCopy.Status = 'out' " +
+													"and Borrowing.bid = ?");
 					ps2.setInt(1, bid);
 					ps2.executeQuery();
 
 					// Select outstanding fines
 					PreparedStatement ps3 = Library.con
-							.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
+							.prepareStatement("Select fid, amount, issuedDate " +
+												"from Fine " +
+												"WHERE paidDate is NULL and borid in " +
+													"(select borrowing.borid " +
+														"from Borrowing, BookCopy " +
+														"where Borrowing.callNumber = BookCopy.callNumber " +
+														"and Borrowing.copyNo = BookCopy.copyNo " +
+														"and Borrowing.bid = ?)");
 					ps3.setInt(1, bid);
 					ps3.executeQuery();
 
 					// Select hold requests
 					PreparedStatement ps4 = Library.con
-							.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title from Book INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber where HoldRequest.bid = ?");
+							.prepareStatement("select holdrequest.hid, holdrequest.issuedDate, Book.callNumber, Book.isbn, Book.title " +
+												"from Book " +
+												"INNER JOIN HoldRequest on Book.callNumber = HoldRequest.callNumber " +
+												"where HoldRequest.bid = ?");
 					ps4.setInt(1, bid);
 					ps4.executeQuery();
 
@@ -205,5 +220,69 @@ public class BorrowerTransactions {
 	
 	public void payFine() {
 		System.out.println("Paying fines");
+		// User inputs: bid, password
+				JTextField bidField = new JTextField(15);
+				JTextField fineField = new JTextField(15);
+				JTextField amountField = new JTextField(15);
+
+				JComponent[] inputs = new JComponent[] { 
+						new JLabel("Borrower ID:"), bidField,
+						new JLabel("Fine ID:"), fineField,
+						new JLabel("Amount:"), amountField,
+
+				};
+				int result = JOptionPane.showConfirmDialog(null, inputs,
+						"Enter fine info", JOptionPane.OK_CANCEL_OPTION,
+						JOptionPane.WARNING_MESSAGE);
+
+				if (result == JOptionPane.OK_OPTION) {
+					int bid = Integer.parseInt(bidField.getText());
+					int fid = Integer.parseInt(fineField.getText());
+					float amount = Float.parseFloat(amountField.getText());
+
+
+					try {
+						PreparedStatement ps = Library.con
+								.prepareStatement("SELECT * FROM fine WHERE borid = ? and fid = ?");
+						ps.setInt(1, bid);
+						ps.setInt(2, fid);
+						ps.executeQuery();
+
+						ResultSet rs = ps.getResultSet();
+						if(rs.next() == true) {
+							// get fine amount for borrower
+							float due = rs.getFloat("amount");
+							float remainingFine = due - amount;
+							
+							if (remainingFine < 0.0f) {
+								remainingFine = 0.00f;
+							}
+
+							PreparedStatement ps2 = Library.con
+									.prepareStatement("UPDATE Fine Set amount = ? WHERE fid = ?");
+							ps2.setFloat(1, remainingFine);
+							ps2.setInt(2, fid);
+							ps2.executeUpdate();
+							Library.con.commit();
+							
+							String msg = String.format("<html>Remaining balance for fine ID %d is $%.2f.", fid, remainingFine);
+							msg += "<br>";
+							msg += "Thank you.</html>";
+							new ErrorMessage(msg);
+							
+						}
+
+
+						// Show tables
+						Statement stmt = Library.con.createStatement();
+						ResultSet rs2 = stmt.executeQuery("SELECT * FROM Fine");
+						LibraryGUI.showTable(rs2, "payFineButton");
+						
+
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 	}
 }

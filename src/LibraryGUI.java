@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -45,7 +46,8 @@ public class LibraryGUI {
 		// Panel for viewing the tables
 		tablePane = new TablePane();
 		tablePane.setBorder(BorderFactory.createLineBorder(Color.black));
-
+		tablePane.setLayout(new BoxLayout(tablePane, BoxLayout.PAGE_AXIS));
+		
 		// Panel for displaying types of users
 		userPane = new JPanel();
 		userPane.setLayout(new BoxLayout(userPane, BoxLayout.Y_AXIS));
@@ -977,6 +979,45 @@ public class LibraryGUI {
 				tableTitle = new JTextArea("Overdue items");
 				table = new JTable(data, columnNames);	
 		}
+			if (buttonClicked == "payFineButton") {
+
+				// For creating the size of the table
+				Statement stmt = Library.con.createStatement();
+				ResultSet count = stmt.executeQuery("SELECT * FROM Fine");
+				List<Integer> fines = new ArrayList<Integer>();
+				while (count.next()) {
+					fines.add(count.getInt("fid"));
+				}
+				
+				Object data[][] = new Object[fines.size()][numCols];
+				count.close();
+
+				int fid;
+				String amount;
+				Date issuedDate;
+				Date paidDate;
+				int borid;
+
+				int j = 0;
+
+				// Fill table
+				while (rs.next()) {
+					fid = rs.getInt("fid");
+					amount = rs.getString("amount");
+					issuedDate = rs.getDate("issuedDate");
+					paidDate = rs.getDate("paidDate");
+					borid = rs.getInt("borid");
+
+					Object tuple[] = { fid, amount, issuedDate, paidDate,
+							borid };
+					data[j] = tuple;
+
+					j++;
+				}
+				
+				tableTitle = new JTextArea("Fines");
+				table = new JTable(data, columnNames);
+			}
 			
 			table.setEnabled(false);
 			JScrollPane scrollPane = new JScrollPane(table);
@@ -1172,6 +1213,9 @@ public class LibraryGUI {
 			tableTitle3.setEditable(false);
 			tablePane.add(tableTitle3);
 			tablePane.add(scrollPane3);
+			
+			JScrollPane tableScrollPane = new JScrollPane(tablePane);
+			frame.add(tableScrollPane);
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
