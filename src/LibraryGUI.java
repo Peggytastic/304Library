@@ -1079,8 +1079,6 @@ public class LibraryGUI {
 			PreparedStatement ps1 = Library.con
 					.prepareStatement(reportsQuery);
 
-
-			System.out.println("QUERY: " + reportsQuery);
 			if (subject.isEmpty() == false) {
 				ps1.setString(1,  subject);
 			}
@@ -1171,9 +1169,6 @@ public class LibraryGUI {
 			PreparedStatement ps1 = Library.con
 					.prepareStatement(reportsQuery);
 
-
-			System.out.println("QUERY: " + reportsQuery);
-
 			ps1.setDate(1, years[0]);
 			ps1.setDate(2, years[1]);
 			ps1.setInt(3, noBooks);
@@ -1257,7 +1252,6 @@ public class LibraryGUI {
 				ps1.setString(i+1, inputs.get(i));
 			}
 
-			System.out.println("QUERY: " + searchQuery);
 			ps1.executeQuery();
 			ResultSet count = ps1.getResultSet();
 			List<String> books = new ArrayList<String>();
