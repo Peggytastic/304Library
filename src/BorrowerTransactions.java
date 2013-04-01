@@ -107,7 +107,6 @@ public class BorrowerTransactions {
 
 		// User inputs: bid, password
 		JTextField bidField = new JTextField(15);
-//		JTextField passwordField = new JTextField(15);
 		JPasswordField passwordField = new JPasswordField(15);
 
 		JComponent[] inputs = new JComponent[] { 

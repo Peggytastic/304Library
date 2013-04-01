@@ -32,14 +32,14 @@ public class LibrarianTransactions {
 
 		// User inputs: isbn, title, mainAuthors, otherAuthors,
 		// publisher, year, subjects
-		JTextField isbnField = new JTextField(10);
-		JTextField titleField = new JTextField(10);
-		JTextField mainAuthorField = new JTextField(10);
-		JTextField otherAuthorsField = new JTextField(100);
+		JTextField isbnField = new JTextField(15);
+		JTextField titleField = new JTextField(20);
+		JTextField mainAuthorField = new JTextField(20);
+		JTextField otherAuthorsField = new JTextField(90);
 		JTextField publisherField = new JTextField(10);
 		JTextField yearField = new JTextField(10);
-		JTextField subjectsField = new JTextField(100);
-		
+		JTextField subjectsField = new JTextField(90);
+
 		Vector<String> list = getSubjectList();
 		JList subjectsList = new JList(list);
 		subjectsList.setVisibleRowCount(5);
@@ -303,7 +303,7 @@ public class LibrarianTransactions {
 		numberField.setText("1");
 
 		JComponent[] inputs = new JComponent[] { 
-				new JLabel("Book year:"), yearField,
+				new JLabel("Year to generate report for:"), yearField,
 				new JLabel("No. of books:"), numberField,
 
 		};

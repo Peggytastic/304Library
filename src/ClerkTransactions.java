@@ -26,11 +26,11 @@ public class ClerkTransactions {
 
 		// User inputs: password, name, address, phone, email, sin/st, type,
 		// date
-		JTextField passwordField = new JTextField(10);
-		JTextField nameField = new JTextField(10);
-		JTextField addressField = new JTextField(10);
-		JTextField phoneField = new JTextField(10);
-		JTextField emailAddressField = new JTextField(10);
+		JTextField passwordField = new JTextField(15);
+		JTextField nameField = new JTextField(15);
+		JTextField addressField = new JTextField(15);
+		JTextField phoneField = new JTextField(15);
+		JTextField emailAddressField = new JTextField(15);
 		JTextField sinOrStNoField = new JTextField(10);
 
 		String[] typeString = { "Student", "Faculty", "Staff" };
@@ -139,7 +139,7 @@ public class ClerkTransactions {
 
 		// User inputs: bid, list of call numbers
 		JTextField bidField = new JTextField(10);
-		JTextField callNumbersField = new JTextField(10);
+		JTextField callNumbersField = new JTextField(50);
 
 		JComponent[] inputs = new JComponent[] { 
 				new JLabel("Borrower ID:"), bidField,
@@ -299,7 +299,7 @@ public class ClerkTransactions {
 	public void returnBooks() {
 		// User inputs: callNumber, copyNo of book to be returned
 		JTextField copyNoField = new JTextField(10);
-		JTextField callNumbersField = new JTextField(10);
+		JTextField callNumbersField = new JTextField(20);
 
 		JComponent[] inputs = new JComponent[] { 
 				new JLabel("Call number:"), callNumbersField, 
