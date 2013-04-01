@@ -78,8 +78,7 @@ public class BorrowerTransactions {
 		if (title.isEmpty() == true && author.isEmpty() == true && subject.isEmpty() == true) {
 			query = "SELECT * from Book";
 		}
-		
-		System.out.println(query);
+
 		try {
 			PreparedStatement ps = Library.con
 					.prepareStatement(query);
@@ -291,7 +290,7 @@ public class BorrowerTransactions {
 	}
 	
 	public void payFine() {
-		System.out.println("Paying fines");
+		
 		// User inputs: bid, fid, amount to pay
 				JTextField bidField = new JTextField(15);
 				JTextField fineField = new JTextField(15);
