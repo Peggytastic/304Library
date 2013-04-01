@@ -1134,9 +1134,9 @@ public class LibraryGUI {
 			}
 			
 			table.setEnabled(false);
-			table.setPreferredSize(new Dimension(600, 400));
+			table.setPreferredSize(new Dimension(600, height));
 			JScrollPane scrollPane = new JScrollPane(table);
-			scrollPane.setPreferredSize(new Dimension(600, 400));
+			scrollPane.setPreferredSize(new Dimension(600, height));
 			table.setAutoCreateRowSorter(true);
 
 			// Display table
