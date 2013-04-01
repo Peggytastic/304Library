@@ -142,7 +142,7 @@ public class ClerkTransactions {
 		JTextField callNumbersField = new JTextField(10);
 
 		JComponent[] inputs = new JComponent[] { 
-				new JLabel("bid:"), bidField,
+				new JLabel("Borrower ID:"), bidField,
 				new JLabel("Call number:"), callNumbersField, 
 				};
 
