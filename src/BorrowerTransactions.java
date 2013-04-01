@@ -7,12 +7,13 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-
+import javax.swing.JPasswordField;
 public class BorrowerTransactions {
 
 	/*************************************************************************************
@@ -101,11 +102,12 @@ public class BorrowerTransactions {
 
 		// User inputs: bid, password
 		JTextField bidField = new JTextField(15);
-		JTextField passwordField = new JTextField(15);
+//		JTextField passwordField = new JTextField(15);
+		JPasswordField passwordField = new JPasswordField(15);
 
 		JComponent[] inputs = new JComponent[] { 
-				new JLabel("bid:"), bidField,
-				new JLabel("password:"), passwordField,
+				new JLabel("Borrower ID:"), bidField,
+				new JLabel("Password:"), passwordField,
 
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs,
@@ -114,8 +116,8 @@ public class BorrowerTransactions {
 
 		if (result == JOptionPane.OK_OPTION) {
 			int bid = Integer.parseInt(bidField.getText());
+			char[] password = passwordField.getPassword();
 
-			String password = passwordField.getText();
 
 			try {
 				PreparedStatement ps = Library.con
@@ -127,7 +129,8 @@ public class BorrowerTransactions {
 				rs.next();
 
 				// Check if password is correct
-				if (!rs.getString("password").equals(password)) {
+				char[] correctPassword = rs.getString("password").toCharArray();
+				if (!Arrays.equals(password, correctPassword)) {
 					new ErrorMessage("Incorrect password!");
 				}
 
@@ -182,13 +185,13 @@ public class BorrowerTransactions {
 	public void placeHold() {
 		// User inputs: bid, password
 				JTextField bidField = new JTextField(15);
-				JTextField passwordField = new JTextField(15);
+				JPasswordField passwordField = new JPasswordField(15);
 				JTextField callNumberField = new JTextField(15);
 
 				JComponent[] inputs = new JComponent[] { 
-						new JLabel("bid:"), bidField,
-						new JLabel("password:"), passwordField,
-						new JLabel("call number:"), callNumberField,
+						new JLabel("Borrower ID:"), bidField,
+						new JLabel("Password:"), passwordField,
+						new JLabel("Call Number:"), callNumberField,
 
 				};
 				int result = JOptionPane.showConfirmDialog(null, inputs,
@@ -197,7 +200,7 @@ public class BorrowerTransactions {
 
 				if (result == JOptionPane.OK_OPTION) {
 					int bid = Integer.parseInt(bidField.getText());
-					String password = passwordField.getText();
+					char[] password = passwordField.getPassword();
 					String callNumber = callNumberField.getText();
 
 					try {
@@ -209,8 +212,9 @@ public class BorrowerTransactions {
 						ResultSet rs = ps.getResultSet();
 						rs.next();
 
+						char[] correctPassword = rs.getString("password").toCharArray();
 						// Check if password is correct
-						if (!rs.getString("password").equals(password)) {
+						if (Arrays.equals(password, correctPassword)) {
 							new ErrorMessage("Incorrect password!");
 						}
 
