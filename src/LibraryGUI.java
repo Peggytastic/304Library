@@ -1149,6 +1149,88 @@ public class LibraryGUI {
 			e.printStackTrace();
 		}
 	}
+	public static void showPopularBooksReportsTable(ResultSet rs, String reportsQuery, Date[] years, int noBooks) {
+		int numCols;
+		ResultSetMetaData rsmd;
+		JTextArea tableTitle = null;
+		JTable table = null;
+
+		try {
+			rsmd = rs.getMetaData();
+			numCols = rsmd.getColumnCount();	
+			
+			String columnNames[] = new String[numCols];
+			for (int i = 0; i < numCols; i++) {
+				columnNames[i] = rsmd.getColumnName(i + 1);
+			}
+
+			// For creating the size of the table
+			PreparedStatement ps1 = Library.con
+					.prepareStatement(reportsQuery);
+
+
+			System.out.println("QUERY: " + reportsQuery);
+
+			ps1.setDate(1, years[0]);
+			ps1.setDate(2, years[1]);
+			ps1.setInt(3, noBooks);
+			ps1.executeQuery();
+			ResultSet count = ps1.getResultSet();
+			List<String> books = new ArrayList<String>();
+			while (count.next()) {
+				books.add(count.getString("callNumber"));
+			}
+			
+			Object data[][] = new Object[books.size()][numCols];
+			count.close(); 
+			String callNumber;
+			String title;
+			String mainAuthor;
+			int timesBorrowed = 0;
+			int j = 0;
+
+			// Fill table
+			while (rs.next()) {
+				callNumber = rs.getString("callNumber");
+				title = rs.getString("title");
+				mainAuthor = rs.getString("mainAuthor");
+				timesBorrowed= rs.getInt("timesBorrowed");
+
+				Object tuple[] = { callNumber, title, mainAuthor, timesBorrowed };
+				
+				data[j] = tuple;
+				j++;
+
+			}
+			
+			rs.close();
+			tableTitle = new JTextArea("Checked out Books Report");
+			table = new JTable(data, columnNames);
+			if(data.length == 0) {
+				
+				new ErrorMessage("No books found.");
+			}
+			
+			table.setEnabled(false);
+			table.setPreferredSize(new Dimension(600, 400));
+			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(600, 400));
+			table.setAutoCreateRowSorter(true);
+
+			// Display table
+			table.setFillsViewportHeight(true);
+			tablePane.removeAll();
+			tablePane.updateUI();
+			tableTitle.setEditable(false);
+			tablePane.add(tableTitle);
+			tablePane.add(scrollPane);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public static void showSearchResultsTable(ResultSet rs, String searchQuery, List<String> inputs) {
 		int numCols;
 		ResultSetMetaData rsmd;

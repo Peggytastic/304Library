@@ -1,9 +1,14 @@
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 import javax.swing.JComponent;
@@ -216,7 +221,8 @@ public class LibrarianTransactions {
 		String reportsQuery = "SELECT BookCopy.callNumber, BookCopy.copyNo, Borrowing.inDate, Borrowing.outDate " +
 								"FROM BookCopy " +
 								"INNER JOIN Borrowing on BookCopy.copyNo = Borrowing.copyNo and BookCopy.callNumber = Borrowing.callNumber " +
-								"WHERE BookCopy.status = 'out' ";
+								"WHERE BookCopy.status = 'out' " + 
+								"ORDER BY BookCopy.callNumber ";
 		
 		if (result == JOptionPane.OK_OPTION) {
 			
@@ -236,6 +242,7 @@ public class LibrarianTransactions {
 					rs = ps.getResultSet();
 				}
 				else {
+					// TODO: add ORDER BY clause
 					query = "SELECT BookCopy.callNumber, BookCopy.copyNo, Borrowing.inDate, Borrowing.outDate " +
 							"FROM BookCopy " + 
 							"INNER JOIN Borrowing ON BookCopy.copyNo = Borrowing.copyNo and BookCopy.callNumber = Borrowing.callNumber " +
@@ -267,6 +274,7 @@ public class LibrarianTransactions {
 		// User inputs: bid, password
 		JTextField yearField = new JTextField(4);
 		JTextField numberField = new JTextField(3);
+		numberField.setText("1");
 
 		JComponent[] inputs = new JComponent[] { 
 				new JLabel("Book year:"), yearField,
@@ -277,25 +285,58 @@ public class LibrarianTransactions {
 				"Popular Books Report", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
 		
-		int year = Integer.parseInt(yearField.getText());
 		int noBooks = Integer.parseInt(numberField.getText());
+		String year = yearField.getText() + "-01-01";
+		String nYear = "";
+
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar c = Calendar.getInstance();
 		
-		String reportsQuery = "SELECT Borrowing.callNumber, count(borid) AS timesBorrowed " +
-								"FROM Borrowing " +
-								"WHERE outDate = ?" +
-								"GROUP BY Borrowing.callNumber";
+		Date date1 = null;
+		Date date2 = null;
+
+		try {
+			// Add one year to input year
+			c.setTime(df.parse(year));
+			c.add(Calendar.YEAR, 1); 
+			nYear = df.format(c.getTime()); 
+			
+			java.util.Date userYear = df.parse(year);
+			java.util.Date nextYear = df.parse(nYear);
+			
+			date1 = new Date(df.parse(
+					df.format(userYear)).getTime());
+			date2 = new Date(df.parse(
+					df.format(nextYear)).getTime());
+
+		} catch (ParseException ex) {
+			new ErrorMessage("Error parsing year.");
+		}
+		
+		Date[] dates = { date1, date2 };
+		String query = "SELECT * FROM ( " +
+				"SELECT Borrowing.callNumber, Book.title, Book.mainAuthor,  COUNT(Borrowing.callNumber) AS timesBorrowed " +
+				"FROM Borrowing " +
+				"LEFT JOIN Book ON Book.callNumber = Borrowing.callNumber " +
+				"WHERE Borrowing.outDate BETWEEN ? and ? " + 
+				"GROUP BY Borrowing.callNumber, Book.title, Book.mainAuthor " +
+				"ORDER BY timesBorrowed DESC ) " +
+				"WHERE ROWNUM <= ?";
 		
 		if (result == JOptionPane.OK_OPTION) {
 			
 			try {
 			PreparedStatement ps = Library.con
-					.prepareStatement(reportsQuery);
-			ps.setInt(1, year);
+					.prepareStatement(query);
+			ps.setDate(1, dates[0]);
+			ps.setDate(2, dates[1]);
+			ps.setInt(3, noBooks);
 			ps.executeQuery();
+			
 			
 			ResultSet rs = ps.getResultSet();			
 			
-			LibraryGUI.showReportsTable(rs, reportsQuery, null);
+			LibraryGUI.showPopularBooksReportsTable(rs, query, dates, noBooks);
 			}
 			catch (SQLException e) {
 				// TODO Auto-generated catch block
