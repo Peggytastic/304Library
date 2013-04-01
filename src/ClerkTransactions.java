@@ -322,8 +322,8 @@ public class ClerkTransactions {
 					// Compare the system date with inDate of the book
 					// If inDate is before current date then issue a fine
 					if (inDate.before(currentDate)) {
-						System.out.println("before");
-						// Random amount of 100 for now
+
+						// Fine amount = 100
 						ps = Library.con
 								.prepareStatement("INSERT into FINE (amount, issuedDate, borid) values (?, ?, ?)");
 						ps.setInt(1, 100);
