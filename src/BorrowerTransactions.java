@@ -292,7 +292,7 @@ public class BorrowerTransactions {
 				JTextField amountField = new JTextField(15);
 
 				JComponent[] inputs = new JComponent[] { 
-						new JLabel("Borrower ID:"), bidField,
+						new JLabel("Borrowing ID:"), bidField,
 						new JLabel("Fine ID:"), fineField,
 						new JLabel("Amount:"), amountField,
 
