@@ -173,98 +173,122 @@ public class ClerkTransactions {
 				ps4.setInt(1, bid);
 				ps4.executeQuery();
 				ResultSet rs3 = ps4.getResultSet();
-				rs3.next();
-				String type = rs3.getString("type");
+				if (rs3.next()) {
+					String type = rs3.getString("type");
 
-				// Set appropriate inDate for borrower type
-				Date inDate = null;
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(outDate);
+					PreparedStatement ps6 = Library.con
+							.prepareStatement("select expiryDate from borrower where bid=?");
+					ps6.setInt(1, bid);
+					ps6.executeQuery();
+					ResultSet rs6 = ps6.getResultSet();
+					rs6.next();
 
-				if (type.equals("student")) {
-					cal.add(Calendar.DAY_OF_YEAR, 7);
-					inDate = new Date(cal.getTimeInMillis());
-				}
-
-				if (type.equals("faculty")) {
-					cal.add(Calendar.DAY_OF_YEAR, 84);
-					inDate = new Date(cal.getTimeInMillis());
-				}
-
-				if (type.equals("staff")) {
-					cal.add(Calendar.DAY_OF_YEAR, 42);
-					inDate = new Date(cal.getTimeInMillis());
-				}
-
-				for (int i = 0; i < callNumbers.length; i++) {
-
-					PreparedStatement ps5 = Library.con
-							.prepareStatement("select * from book where callNumber = ?");
-					ps5.setString(1, callNumbers[i]);
-					ps5.executeQuery();
-
-					// If callNumber exists in the database, proceed
-					if (ps5.getResultSet().next() == true) {
-						// Get all copies with the matching callNumber and
-						// status
-						// being 'in'
-						PreparedStatement ps2 = Library.con
-								.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
-						ps2.setString(1, callNumbers[i]);
-
-						ps2.executeUpdate();
-						ResultSet rs = ps2.getResultSet();
-
-						if (rs.next() == true) {
-
-							// Insert into Borrowing table if there exists a
-							// copy of
-							// the book with status "in"
-							String copyNo = rs.getString("copyNo");
-							PreparedStatement ps = Library.con
-									.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
-							ps.setInt(1, bid);
-							ps.setString(2, callNumbers[i]);
-							ps.setString(3, copyNo);
-							ps.setDate(4, outDate);
-							ps.setDate(5, inDate);
-
-							ps.executeUpdate();
-							Library.con.commit();
-
-							// Set status of checked out copy to "out"
-							PreparedStatement ps3 = Library.con
-									.prepareStatement("update bookcopy set status = ? where callNumber = ? and copyNo=?");
-							ps3.setString(1, "out");
-							ps3.setString(2, callNumbers[i]);
-							ps3.setString(3, copyNo);
-
-							ps3.executeUpdate();
-							Library.con.commit();
-
-							ps.close();
-							ps2.close();
-							ps3.close();
-							rs.close();
-							rs3.close();
-
-						} else {
-							// Error message for if there are no copies in
-							new ErrorMessage("No copies are in for "
-									+ callNumbers[i]);
+					java.util.Date expiryDate = null;
+					expiryDate = rs6.getDate("expiryDate");
+					
+					if (expiryDate.after(outDate)) {
+						// Set appropriate inDate for borrower type
+						Date inDate = null;
+						Calendar cal = Calendar.getInstance();
+						cal.setTime(outDate);
+						
+						if (type.equals("student")) {
+							cal.add(Calendar.DAY_OF_YEAR, 7);
+							inDate = new Date(cal.getTimeInMillis());
 						}
-					} else {
-						// Error message for if callNumber could not be found in
-						// the database
-						new ErrorMessage(callNumbers[i] + " does not exist!");
-					}
-					ps5.close();
-				}
-				ps4.close();
-				Statement stmt = Library.con.createStatement();
-				ResultSet rs2 = stmt.executeQuery("SELECT * FROM Borrowing");
-				LibraryGUI.showTable(rs2, "checkoutButton");
 
+						if (type.equals("faculty")) {
+							cal.add(Calendar.DAY_OF_YEAR, 84);
+							inDate = new Date(cal.getTimeInMillis());
+						}
+
+						if (type.equals("staff")) {
+							cal.add(Calendar.DAY_OF_YEAR, 42);
+							inDate = new Date(cal.getTimeInMillis());
+						}
+
+						for (int i = 0; i < callNumbers.length; i++) {
+
+							PreparedStatement ps5 = Library.con
+									.prepareStatement("select * from book where callNumber = ?");
+							ps5.setString(1, callNumbers[i]);
+							ps5.executeQuery();
+
+							// If callNumber exists in the database, proceed
+							if (ps5.getResultSet().next() == true) {
+								// Get all copies with the matching callNumber
+								// and
+								// status
+								// being 'in'
+								PreparedStatement ps2 = Library.con
+										.prepareStatement("select * from bookcopy where callNumber = ? and status like 'in'");
+								ps2.setString(1, callNumbers[i]);
+
+								ps2.executeUpdate();
+								ResultSet rs = ps2.getResultSet();
+
+								if (rs.next() == true) {
+
+									// Insert into Borrowing table if there
+									// exists a
+									// copy of
+									// the book with status "in"
+									String copyNo = rs.getString("copyNo");
+									PreparedStatement ps = Library.con
+											.prepareStatement("INSERT INTO Borrowing (bid, callNumber, copyNo, outDate, inDate) VALUES (?,?,?,?,?)");
+									ps.setInt(1, bid);
+									ps.setString(2, callNumbers[i]);
+									ps.setString(3, copyNo);
+									ps.setDate(4, outDate);
+									ps.setDate(5, inDate);
+
+									ps.executeUpdate();
+									Library.con.commit();
+
+									// Set status of checked out copy to "out"
+									PreparedStatement ps3 = Library.con
+											.prepareStatement("update bookcopy set status = ? where callNumber = ? and copyNo=?");
+									ps3.setString(1, "out");
+									ps3.setString(2, callNumbers[i]);
+									ps3.setString(3, copyNo);
+
+									ps3.executeUpdate();
+									Library.con.commit();
+
+									ps.close();
+									ps2.close();
+									ps3.close();
+									rs.close();
+									rs3.close();
+
+								} else {
+									// Error message for if there are no copies
+									// in
+									new ErrorMessage("No copies are in for "
+											+ callNumbers[i]);
+								}
+							} else {
+								// Error message for if callNumber could not be
+								// found in
+								// the database
+								new ErrorMessage(callNumbers[i]
+										+ " does not exist!");
+							}
+							ps5.close();
+						}
+						ps4.close();
+						Statement stmt = Library.con.createStatement();
+						ResultSet rs2 = stmt
+								.executeQuery("SELECT * FROM Borrowing");
+						LibraryGUI.showTable(rs2, "checkoutButton");
+
+					} else {
+						new ErrorMessage("Account is expired.");
+					}
+					ps6.close();
+				} else {
+					new ErrorMessage("User does not exist.");
+				}
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
