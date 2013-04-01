@@ -1157,14 +1157,14 @@ public class LibraryGUI {
 
 		try {
 			rsmd = rs.getMetaData();
-			numCols = rsmd.getColumnCount() + 1;
+			numCols = rsmd.getColumnCount() + 2;
 
 			String columnNames[] = new String[numCols];
-			for (int i = 0; i < numCols-1; i++) {
+			for (int i = 0; i < numCols-2; i++) {
 				columnNames[i] = rsmd.getColumnName(i + 1);
 			}
-			columnNames[numCols-1] = "COPIES AVAILABLE";
-
+			columnNames[numCols-2] = "IN";
+			columnNames[numCols-1] = "OUT";
 			// For creating the size of the table
 			PreparedStatement ps1 = Library.con
 					.prepareStatement(searchQuery);
@@ -1188,6 +1188,7 @@ public class LibraryGUI {
 			String mainAuthor;
 			String publisher;
 			int copiesAvailable = 0;
+			int copiesOut = 0;
 			int year;
 			int j = 0;
 
@@ -1205,14 +1206,23 @@ public class LibraryGUI {
 						.prepareStatement("SELECT count(*) from BookCopy WHERE callNumber = ? and status LIKE 'in'");
 				ps2.setString(1, callNumber);
 				ps2.executeQuery();
-				
 				ResultSet rs2 = ps2.getResultSet();
 				if(rs2.next()) {
 					copiesAvailable = rs2.getInt(1);
 				}
+				
+				PreparedStatement ps3 = Library.con
+						.prepareStatement("SELECT count(*) from BookCopy WHERE callNumber = ? and status LIKE 'out'");
+				ps3.setString(1, callNumber);
+				ps3.executeQuery();
+				
+				ResultSet rs3 = ps3.getResultSet();
+				if(rs3.next()) {
+					copiesOut = rs3.getInt(1);
+				}
 
-				Object tuple[] = { callNumber, isbn, title, mainAuthor,
-						publisher, year, copiesAvailable };
+				Object tuple[] = { callNumber, title, mainAuthor,
+						publisher, year, isbn, copiesAvailable, copiesOut };
 				
 				data[j] = tuple;
 				j++;
