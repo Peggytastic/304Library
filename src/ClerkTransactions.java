@@ -141,8 +141,10 @@ public class ClerkTransactions {
 		JTextField bidField = new JTextField(10);
 		JTextField callNumbersField = new JTextField(10);
 
-		JComponent[] inputs = new JComponent[] { new JLabel("bid:"), bidField,
-				new JLabel("Call number:"), callNumbersField, };
+		JComponent[] inputs = new JComponent[] { 
+				new JLabel("Borrower ID:"), bidField,
+				new JLabel("Call number:"), callNumbersField, 
+				};
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Enter borrowing info", JOptionPane.OK_CANCEL_OPTION,

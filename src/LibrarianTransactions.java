@@ -9,12 +9,18 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Vector;
+
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
 
 public class LibrarianTransactions {
 	
@@ -33,6 +39,12 @@ public class LibrarianTransactions {
 		JTextField publisherField = new JTextField(10);
 		JTextField yearField = new JTextField(10);
 		JTextField subjectsField = new JTextField(100);
+		
+		Vector<String> list = getSubjectList();
+		JList subjectsList = new JList(list);
+		subjectsList.setVisibleRowCount(5);
+		subjectsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		subjectsList.setLayoutOrientation(JList.VERTICAL_WRAP);
 
 		JComponent[] inputs = new JComponent[] { 
 				new JLabel("isbn:"), isbnField, 
@@ -41,7 +53,8 @@ public class LibrarianTransactions {
 				new JLabel("Other authors:"), otherAuthorsField,
 				new JLabel("Publisher:"), publisherField, 
 				new JLabel("Year:"), yearField, 
-				new JLabel("Subjects:"), subjectsField 
+				new JLabel("Subjects:"), subjectsList,
+				new JLabel("Add new subjects:"), subjectsField 
 				};
 
 		int result = JOptionPane.showConfirmDialog(null, inputs,
@@ -55,9 +68,16 @@ public class LibrarianTransactions {
 			String[] otherAuthors = otherAuthorsField.getText().split(",");
 			String publisher = publisherField.getText();
 			int year = Integer.parseInt(yearField.getText());
-			String[] subjects = subjectsField.getText().split(",");
 			String callNumber = randomString() + " " + randomString() + " "
 					+ Integer.toString(year);
+			
+			// Retrieve list of subjects for book
+			Vector<String> subjects = new Vector<String>(5,1);
+			for (int i = 0; i < subjectsList.getSelectedValues().length; i++) {
+				subjects.addElement(subjectsList.getSelectedValues()[i].toString());
+			}
+			String[] newSubjects = subjectsField.getText().split(",");
+			Collections.addAll(subjects, newSubjects);
 			try {
 
 				// Insert new book into Book table
@@ -106,13 +126,13 @@ public class LibrarianTransactions {
 			}
 
 			try {
-				for (int i = 0; i < subjects.length; i++) {
+				for (int i = 0; i < subjects.size(); i++) {
 
 					// Add subjects into hasSubjects table
 					PreparedStatement ps = Library.con
 							.prepareStatement("INSERT INTO hasSubject VALUES (?,?)");
 					ps.setString(1, callNumber);
-					ps.setString(2, subjects[i]);
+					ps.setString(2, subjects.get(i));
 
 					ps.executeUpdate();
 					Library.con.commit();
@@ -204,17 +224,23 @@ public class LibrarianTransactions {
 	public void generateCheckedOutBooksReport() {
 		
 		// User inputs: bid, password
-		JTextField subjectField = new JTextField(4);
+		Vector<String> subjectList = getSubjectList();
+		subjectList.insertElementAt("All subjects", 0);
+		JComboBox subjectCombo = new JComboBox(subjectList);
 		
 		JComponent[] inputs = new JComponent[] { 
-				new JLabel("Subject"), subjectField,
+				new JLabel("Subject: "), subjectCombo,
 
 		};
 		int result = JOptionPane.showConfirmDialog(null, inputs,
 				"Checked out Books Report", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.WARNING_MESSAGE);
 		
-		String subject = subjectField.getText();
+		String subject = "";
+
+		if (subjectCombo.getSelectedIndex() != 0) {
+			subject = subjectCombo.getSelectedItem().toString();
+		}
 		
 		String query = "";
 		
@@ -347,6 +373,31 @@ public class LibrarianTransactions {
 		
 	}
 	
+	public static Vector<String> getSubjectList() {
+		
+		Vector<String> subjectList = new Vector<String>(5,1);
+		String query = "SELECT DISTINCT(subject) FROM HasSubject";
+		
+		try {
+			PreparedStatement ps = Library.con
+					.prepareStatement(query);
+			ps.executeQuery();
+
+			ResultSet rs = ps.getResultSet();
+			while(rs.next()) {
+				subjectList.addElement(rs.getString("subject"));
+			}
+		}
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
+		return subjectList;
+		
+	}
 	// For generating call numbers
 	public static String randomString() {
 		char nextChar;
