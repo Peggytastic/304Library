@@ -71,11 +71,6 @@ public class BorrowerTransactions {
 			query += "SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 						"FROM Book, HasSubject " +
 						"WHERE Book.callNumber=HasSubject.callNumber and HasSubject.subject = ? ";
-			query += "UNION";
-			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
-					"FROM Book " +
-					"WHERE Book.subject = ? ";
-			setInputs.add(subject);
 			setInputs.add(subject);
 		}
 		
