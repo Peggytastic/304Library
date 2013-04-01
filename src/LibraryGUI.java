@@ -1384,7 +1384,7 @@ public class LibraryGUI {
 			ps1.executeQuery();
 
 			PreparedStatement ps2 = Library.con
-					.prepareStatement("Select fid, amount, issuedDate from Fine WHERE paidDate is NULL and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
+					.prepareStatement("Select fid, amount, issuedDate, borid from Fine WHERE amount > 0 and borid in (select borrowing.borid from Borrowing, BookCopy where Borrowing.callNumber = BookCopy.callNumber and Borrowing.copyNo = BookCopy.copyNo and Borrowing.bid = ?)");
 			ps2.setInt(1, bid);
 			ps2.executeQuery();
 
@@ -1442,7 +1442,8 @@ public class LibraryGUI {
 			int fid;
 			String amount;
 			Date issuedDate;
-
+			int borid2; 
+			
 			j = 0;
 
 			// Fill fines table
@@ -1450,8 +1451,9 @@ public class LibraryGUI {
 				fid = rs2.getInt("fid");
 				amount = rs2.getString("amount");
 				issuedDate = rs2.getDate("issuedDate");
+				borid2 = rs2.getInt("borid");
 				
-				Object tuple[] = { fid, amount, issuedDate };
+				Object tuple[] = { fid, amount, issuedDate, borid2 };
 				data2[j] = tuple;
 				
 				j++;
@@ -1469,11 +1471,11 @@ public class LibraryGUI {
 			while (rs3.next()) {
 				hid = rs3.getInt("hid");
 				issuedDate2 = rs3.getDate("issuedDate");
-				isbn = rs3.getString("isbn");
 				callNumber2 = rs3.getString("callNumber");
+				isbn = rs3.getString("isbn");
 				title = rs3.getString("title");
 
-				Object tuple[] = { hid, issuedDate2, isbn, callNumber2, title };
+				Object tuple[] = { hid, issuedDate2, callNumber2, isbn , title };
 				data3[j] = tuple;
 				j++;
 

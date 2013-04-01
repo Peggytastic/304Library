@@ -155,9 +155,9 @@ public class BorrowerTransactions {
 
 					// Select outstanding fines
 					PreparedStatement ps3 = Library.con
-							.prepareStatement("Select fid, amount, issuedDate " +
+							.prepareStatement("Select fid, amount, issuedDate, borid " +
 												"from Fine " +
-												"WHERE paidDate is NULL and borid in " +
+												"WHERE amount > 0 and borid in " +
 													"(select borrowing.borid " +
 														"from Borrowing, BookCopy " +
 														"where Borrowing.callNumber = BookCopy.callNumber " +
