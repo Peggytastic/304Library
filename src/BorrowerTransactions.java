@@ -45,7 +45,7 @@ public class BorrowerTransactions {
 		java.util.List<String> setInputs = new java.util.ArrayList<String>();
 
 		if (title.isEmpty() == false) { 
-			query += "SELECT callNumber, title, mainAuthor, publisher, year, isbn " +
+			query += " SELECT callNumber, title, mainAuthor, publisher, year, isbn " +
 						"FROM Book " +
 						"WHERE title = ? ";
 			setInputs.add(title);
@@ -54,9 +54,14 @@ public class BorrowerTransactions {
 			if(query.isEmpty() == false) {
 				query += "UNION";
 			}
-			query += "SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
+			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 						"FROM Book, HasAuthor " +
 						"WHERE Book.callNumber = HasAuthor.callNumber and HasAuthor.name = ? ";
+			query += "UNION";
+			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
+					"FROM Book " +
+					"WHERE Book.mainAuthor = ? ";
+			setInputs.add(author);
 			setInputs.add(author);
 		}
 		if (subject.isEmpty() == false) {
@@ -66,6 +71,11 @@ public class BorrowerTransactions {
 			query += "SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 						"FROM Book, HasSubject " +
 						"WHERE Book.callNumber=HasSubject.callNumber and HasSubject.subject = ? ";
+			query += "UNION";
+			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
+					"FROM Book " +
+					"WHERE Book.subject = ? ";
+			setInputs.add(subject);
 			setInputs.add(subject);
 		}
 		
@@ -74,6 +84,7 @@ public class BorrowerTransactions {
 			query = "SELECT * from Book";
 		}
 		
+		System.out.println(query);
 		try {
 			PreparedStatement ps = Library.con
 					.prepareStatement(query);
