@@ -56,7 +56,7 @@ public class BorrowerTransactions {
 			}
 			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 						"FROM Book, HasAuthor " +
-						"WHERE Book.callNumber = HasAuthor.callNumber and HasAuthor.name = ? ";
+						"WHERE Book.callNumber = HasAuthor.callNumber and HasAuthor.name COLLATE UTF8_GENERAL_CI = ? ";
 			query += "UNION";
 			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 					"FROM Book " +

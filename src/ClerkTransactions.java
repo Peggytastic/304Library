@@ -130,7 +130,7 @@ public class ClerkTransactions {
 
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				new ErrorMessage("Error adding borrower");
 			}
 		}
 	}
