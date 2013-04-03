@@ -18,7 +18,7 @@ public class BorrowerTransactions {
 
 	/*************************************************************************************
 	*   BORROWER TRANSACTIONS:
-	*   	- book search(TODO), check account, place holds, pay fine(TODO)
+	*   	- book search, check account, place holds, pay fine
 	*************************************************************************************/
 	public void searchForBooks() {
 		// User inputs: title, author
@@ -56,7 +56,7 @@ public class BorrowerTransactions {
 			}
 			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 						"FROM Book, HasAuthor " +
-						"WHERE Book.callNumber = HasAuthor.callNumber and HasAuthor.name COLLATE UTF8_GENERAL_CI = ? ";
+						"WHERE Book.callNumber = HasAuthor.callNumber and HasAuthor.name = ? ";
 			query += "UNION";
 			query += " SELECT Book.callNumber, Book.title, Book.mainAuthor, Book.publisher, Book.year, Book.isbn " +
 					"FROM Book " +
