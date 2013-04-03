@@ -275,7 +275,6 @@ public class LibrarianTransactions {
 							"INNER JOIN HasSubject ON BookCopy.callNumber = Borrowing.callNumber and BookCopy.callNumber = HasSubject.callNumber " +
 							"WHERE HasSubject.subject = ? and BookCopy.status = 'out' ";
 
-					System.out.println(query);
 					PreparedStatement ps2 = Library.con
 							.prepareStatement(query);
 					ps2.setString(1, subject);

@@ -1070,7 +1070,7 @@ public class LibraryGUI {
 
 			// Get current date
 			java.util.Date currentDate = new java.util.Date();
-
+					
 			Object data[][] = new Object[books.size()][numCols];
 			count.close();
 			String callNumber;
@@ -1099,6 +1099,7 @@ public class LibraryGUI {
 
 				data[j] = tuple;
 				j++;
+				overdue = "NO";
 
 			}
 
