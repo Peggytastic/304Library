@@ -218,7 +218,7 @@ public class BorrowerTransactions {
 
 						char[] correctPassword = rs.getString("password").toCharArray();
 						// Check if password is correct
-						if (Arrays.equals(password, correctPassword)) {
+						if (!Arrays.equals(password, correctPassword)) {
 							new ErrorMessage("Incorrect password!");
 						}
 

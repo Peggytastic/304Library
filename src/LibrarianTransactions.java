@@ -26,7 +26,7 @@ public class LibrarianTransactions {
 	
 	/*************************************************************************************
 	*   LIBRARIAN TRANSACTIONS:
-	*   	- add books, add book copy, generate checked out books report(TODO), generate popular books(TODO)
+	*   	- add books, add book copy, generate checked out books report, generate popular books
 	*************************************************************************************/
 	public void addBook() {
 
